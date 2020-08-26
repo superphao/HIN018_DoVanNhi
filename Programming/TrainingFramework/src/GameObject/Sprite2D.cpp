@@ -6,10 +6,8 @@
 
 extern GLint screenWidth;
 extern GLint screenHeight;
-GLfloat xShift = 0;
-GLfloat yShift = 0;
 GLint time = 0;
-GLint temp = 0;
+GLint temp = 1;
 
 void Sprite2D::CaculateWorldMatrix()
 {
@@ -26,11 +24,29 @@ Sprite2D::Sprite2D(Models * model, Shaders * shader, Texture * texture)
 	m_pShader = shader;
 	m_pCamera = nullptr;
 	m_pTexture = texture;
+	m_xShift = 0;
+	m_yShift = 0;
 
 	m_Vec3Position = Vector3(0, 0, 0);
 	m_iHeight = 30;
 	m_iWidth = 40;
 	m_Vec3Scale = Vector3((float)m_iWidth/screenWidth, (float)m_iHeight/screenHeight, 1);
+}
+
+Sprite2D::Sprite2D(Models* model, Shaders* shader, Texture* texture, Camera* camera)
+	: BaseObject()
+{
+	m_pModel = model;
+	m_pShader = shader;
+	m_pCamera = camera;
+	m_pTexture = texture;
+	m_xShift = 0;
+	m_yShift = 0;
+
+	m_Vec3Position = Vector3(0, 0, 0);
+	m_iHeight = 30;
+	m_iWidth = 40;
+	m_Vec3Scale = Vector3((float)m_iWidth / screenWidth, (float)m_iHeight / screenHeight, 1);
 }
 
 Sprite2D::Sprite2D(Models * model, Shaders * shader, Vector4 color)
@@ -41,6 +57,8 @@ Sprite2D::Sprite2D(Models * model, Shaders * shader, Vector4 color)
 	m_pCamera = nullptr;
 	m_pTexture = nullptr;
 	m_Color = color;
+	m_xShift = 0;
+	m_yShift = 0;
 
 	m_Vec3Position = Vector3(0, 0, 0);
 	m_iHeight = 50;
@@ -110,7 +128,7 @@ void Sprite2D::Draw()
 	iTempShaderVaribleGLID = -1;
 	iTempShaderVaribleGLID = m_pShader->GetUniformLocation((char*)"temp");
 	if (iTempShaderVaribleGLID != -1)
-		glUniform2f(iTempShaderVaribleGLID, xShift, yShift);
+		glUniform2f(iTempShaderVaribleGLID, m_xShift, - m_yShift);
 
 	iTempShaderVaribleGLID = -1;
 	iTempShaderVaribleGLID = m_pShader->GetUniformLocation((char*)"u_matMVP");
@@ -128,24 +146,8 @@ void Sprite2D::Draw()
 
 void Sprite2D::Update(GLfloat deltatime)
 {
-	/*printf("%f", xShift);
-	if (time % 10 == 0) {
-		if (temp == 0)
-			if (xShift < 0.875) {
-				xShift = xShift + 0.125;
-				if (xShift == 0.875) temp = 1;
-			}
-		if (temp == 1)
-			if (xShift > 0) {
-				xShift = xShift - 0.125;
-				if (xShift == 0) temp = 0;
-			}
-	}
-	if (m_Vec2DPos.x >= 640) m_Vec2DPos.x = 0;
-	float xx = m_Vec2DPos.x + 1;
-	float yy = m_Vec2DPos.y;
-	Set2DPosition(xx, yy);
-	time = time + 1;*/
+	//printf("%f", m_Range.y);
+	Move(m_Range);
 }
 
 
@@ -201,23 +203,70 @@ void Sprite2D::setTexture(Texture* texture) {
 	m_pTexture = texture;
 }
 
-void Sprite2D::Move() {
-	printf("%f", xShift);
-	if (time % 5 == 0) {
-		if (temp == 0)
-			if (xShift < 0.875) {
-				xShift = xShift + 0.125;	
-				if (xShift == 0.875) temp = 1;
-			}
-		if (temp == 1)
-			if (xShift > 0) {
-				xShift = xShift - 0.125;
-				if (xShift == 0) temp = 0;
-			}
+void Sprite2D::SetNumEffects(GLint numEffects)
+{
+	m_numEffects = numEffects;
+}
+
+void Sprite2D::SetNumSprites(GLint numSprites)
+{
+	m_numSprites = numSprites;
+}
+
+GLint Sprite2D::GetNumSprites()
+{
+	return m_numSprites;
+}
+
+GLint Sprite2D::GetNumEffects()
+{
+	return m_numEffects;
+}
+
+void Sprite2D::Move(Vector2 range) {
+	Set2DPosition(m_Vec2DPos.x - range.x, m_Vec2DPos.y - range.y);
+	if (m_Vec2DPos.x > screenWidth + (GLfloat)screenWidth / 2) m_Vec2DPos.x = - (GLfloat)screenWidth / 2;
+	//if (m_Vec2DPos.y > screenHeight) m_Vec2DPos.y = 0;
+	if (m_Vec2DPos.x < -(GLfloat)screenWidth / 2) m_Vec2DPos.x = screenWidth + (GLfloat)screenWidth / 2;
+	if (m_Vec2DPos.y < -(GLfloat)screenHeight / 2) m_Vec2DPos.y = screenHeight + (GLfloat)screenHeight / 2;
+}
+
+void Sprite2D::Animation(GLfloat deltatime)
+{
+	GLfloat a = (GLfloat)1 / m_numEffects;
+	if (time % 8 == 0) {
+		//printf("%f", m_yShift);
+		if (temp <= m_numEffects - 1) {
+			m_yShift = m_yShift - (GLfloat)1 / m_numEffects;
+		}
+		else if (temp > m_numEffects - 1) {
+			m_yShift = m_yShift + (GLfloat)1 / m_numEffects;
+		}
+		temp = temp % (2 * m_numEffects - 2) + 1;
 	}
-	if (m_Vec2DPos.x >= 640) m_Vec2DPos.x = 0;
-	float xx = m_Vec2DPos.x + 2;
-	float yy = m_Vec2DPos.y;
-	Set2DPosition(xx, yy);
 	time = time + 1;
 }
+
+void Sprite2D::SetRange(Vector2 range)
+{
+	m_Range = range;
+}
+
+void Sprite2D::SetShift(GLfloat xShift, GLfloat yShift)
+{
+	m_xShift = xShift;
+	m_yShift = yShift;
+}
+
+Vector2 Sprite2D::GetXYShiftPosition()
+{
+	return Vector2(m_xShift, m_yShift);
+}
+
+bool Sprite2D::CheckCollision(std::shared_ptr<Sprite2D> object)
+{
+	bool collisionX = m_Vec2DPos.x + m_iWidth/2 >= object->m_Vec2DPos.x && object->m_Vec2DPos.x + object->m_iWidth/2 >= m_Vec2DPos.x;
+	bool collisionY = m_Vec2DPos.y + m_iHeight/2 >= object->m_Vec2DPos.y && object->m_Vec2DPos.y + object->m_iHeight/2 >= m_Vec2DPos.y;
+	return collisionX && collisionY;
+}
+

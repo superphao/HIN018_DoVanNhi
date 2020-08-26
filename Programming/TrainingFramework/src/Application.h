@@ -1,8 +1,8 @@
 #pragma once
 #include "Singleton.h"
 #include "GameConfig.h"
-
-
+#include <vector>
+#include <memory>
 #include "Sprite2D.h"
 #include "Sprite3D.h"
 
@@ -16,6 +16,7 @@ public:
 	void		Render();
 	void		HandleKeyEvent(unsigned char key, bool bIsPresseded);
 	void		HandleTouchEvent(GLint x, GLint y, bool bIsPresseded);
+	void		DoCollision();
 	void		Exit();
 
 private:
@@ -25,6 +26,9 @@ private:
 	Sprite3D *	m_Plan;
 	Sprite3D *	m_Sprite3D1;
 	Sprite3D *	m_Sprite3D;
-
+	Sprite2D *	m_Player;
+	Sprite2D *	m_SurfBoard;
+	std::vector<Sprite2D *>	m_ArrWater;
+	std::vector<std::shared_ptr<Sprite2D>>	m_ArrObject;
 };
 
