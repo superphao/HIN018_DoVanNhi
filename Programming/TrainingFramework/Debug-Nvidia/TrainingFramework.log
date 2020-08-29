@@ -1,5 +1,0 @@
-﻿cl : command line warning D9035: option 'Gm' has been deprecated and will be removed in a future release
-  Application.cpp
-C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming\TrainingFramework\src\Application.cpp(88,64): warning C4244: 'argument': conversion from 'GLfloat' to 'GLint', possible loss of data
-C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming\TrainingFramework\src\Application.cpp(88,37): warning C4244: 'argument': conversion from 'GLfloat' to 'GLint', possible loss of data
-  TrainingFramework.vcxproj -> C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming\\BIN-Nvidia\TrainingFramework.exe
