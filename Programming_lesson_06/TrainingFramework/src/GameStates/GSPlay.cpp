@@ -334,29 +334,81 @@ void GSPlay::DoCollision()
 
 void GSPlay::RandomSprite()
 {
+	srand(time(NULL));
+	std::vector<EnemyType> enemyType;
+	enemyType.push_back(OBJECT64);
+	enemyType.push_back(OBJECT32);
+	enemyType.push_back(SANDBAR256);
+	int IndexType = rand() % enemyType.size();
+	printf("%d", IndexType);
+
 	auto shader = ResourceManagers::GetInstance()->GetShader("ObjectShader");
 	auto model = ResourceManagers::GetInstance()->GetModel("Object64");
 	auto texture = ResourceManagers::GetInstance()->GetTexture("objects64");
-	m_ArrObject.push_back(std::make_shared<Enemy>(model, shader, texture));
-	m_ArrObject.back()->SetSize(64, 64);
-	srand(time(NULL));
-	m_ArrObject.back()->SetShift((GLfloat)(rand() % 30) / 30, 0);
-	//m_ArrObject.back()->SetShift((GLfloat) 3/30, 0);
-	m_ArrObject.back()->Set2DPosition((GLfloat)(rand() % 640), rand() % (screenHeight / 2) + (screenHeight));
-	m_ArrObject.back()->SetRange(m_ArrObject.at(0)->GetRange());
+	std::shared_ptr<Sprite2D> effect;
+	std::shared_ptr<Enemy> object;
 
-	//add effect
-	model = ResourceManagers::GetInstance()->GetModel("EffectObj");
-	texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
-	std::shared_ptr<Sprite2D> effect = std::make_shared<Sprite2D>(model, shader, texture);
-	effect->SetSize(96, 96);
-	effect->Set2DPosition(m_ArrObject.back()->Get2DPosition());
-	effect->SetNumEffects(3);
-	effect->SetShift(0, (GLfloat)2 / effect->GetNumEffects());
-	effect->SetRange(m_ArrObject.back()->GetRange());
-	effect->Init();
-	m_ArrObject.back()->SetEffects(effect);
-	m_ArrObject.back()->Init();
+	//set vi tri
+	GLint XPos = rand() % 640;
+	GLint YPos = rand() % (screenHeight / 2) + screenHeight;
 
+	switch (enemyType.at(IndexType))
+	{
+	case OBJECT64:
+		object = std::make_shared<Enemy>(model, shader, texture);
+		object->SetSize(64, 64);
+		object->SetShift((GLfloat)(rand() % 30) / 30, 0);
+		object->Set2DPosition((GLfloat) XPos, (GLfloat) YPos);
+		object->SetRange(m_ArrObject.at(0)->GetRange());
+
+		////add effect song nuoc
+		model = ResourceManagers::GetInstance()->GetModel("EffectObj");
+		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
+		effect = std::make_shared<Sprite2D>(model, shader, texture);
+		effect->SetSize(96, 96);
+		effect->Set2DPosition(object->Get2DPosition());
+		effect->SetNumEffects(3);
+		effect->SetShift(0, (GLfloat)2 / effect->GetNumEffects());
+		effect->SetRange(object->GetRange());
+		effect->Init();
+		object->SetEffects(effect);
+		object->Init();
+		break;
+	case OBJECT32:
+		model = ResourceManagers::GetInstance()->GetModel("Object32");
+		texture = ResourceManagers::GetInstance()->GetTexture("objects32");
+		object = std::make_shared<Enemy>(model, shader, texture);
+		object->SetSize(32, 32);
+		object->SetShift((GLfloat)(rand() % 8) / 20, 0);
+		object->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
+		object->SetRange(m_ArrObject.at(0)->GetRange());
+
+		//add effect song nuoc
+		model = ResourceManagers::GetInstance()->GetModel("EffectObj");
+		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
+		effect = std::make_shared<Sprite2D>(model, shader, texture);
+		effect->SetSize(96, 96);
+		effect->Set2DPosition((GLfloat)XPos, (GLfloat)YPos - 15);
+		effect->SetNumEffects(3);
+		effect->SetShift(0, (GLfloat)2 / effect->GetNumEffects());
+		effect->SetRange(object->GetRange());
+		effect->Init();
+		object->SetEffects(effect);
+		object->Init();
+		break;
+	case SANDBAR256:
+		model = ResourceManagers::GetInstance()->GetModel("Sandbar");
+		texture = ResourceManagers::GetInstance()->GetTexture("sandbar256");
+		object = std::make_shared<Enemy>(model, shader, texture);
+		object->SetSize(256, 128);
+		object->SetShift((GLfloat)(rand() % 4) / 4, 0);
+		object->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
+		object->SetRange(m_ArrObject.at(0)->GetRange());
+		break;
+	default:
+		break;
+	}
+	m_ArrObject.push_back(object);
+	enemyType.clear();
 }
 

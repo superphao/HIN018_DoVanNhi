@@ -19,3 +19,13 @@ std::shared_ptr<Sprite2D> Enemy::GetEffects()
 {
 	return m_Effects;
 }
+
+void Enemy::SetName(std::string name)
+{
+	m_Name = name;
+}
+
+std::string Enemy::GetName()
+{
+	return m_Name;
+}

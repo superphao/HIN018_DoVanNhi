@@ -6,7 +6,6 @@
 
 extern GLint screenWidth;
 extern GLint screenHeight;
-GLfloat time = 0;
 
 
 void Sprite2D::CaculateWorldMatrix()
@@ -26,6 +25,8 @@ Sprite2D::Sprite2D(std::shared_ptr<Models> model, std::shared_ptr<Shaders> shade
 	m_pTexture = texture;
 	m_xShift = 0;
 	m_yShift = 0;
+	time = 0;
+	temp = 1;
 
 	m_Vec3Position = Vector3(0, 0, 0);
 	m_iHeight = 50;
@@ -43,6 +44,8 @@ Sprite2D::Sprite2D(std::shared_ptr<Models> model, std::shared_ptr<Shaders> shade
 	m_Color = color;
 	m_xShift = 0;
 	m_yShift = 0;
+	time = 0;
+	temp = 1;
 
 	m_Vec3Position = Vector3(0, 0, 0);
 	m_iHeight = 50;
@@ -223,7 +226,7 @@ void Sprite2D::Animation(GLfloat deltatime)
 		temp = temp % (2 * m_numEffects - 2) + 1;
 		time = 0;
 	}
-	time = time + 4*deltatime;
+	time = time + 3*deltatime;
 }
 
 void Sprite2D::SetRange(Vector2 range)
@@ -249,8 +252,8 @@ Vector2 Sprite2D::GetXYShiftPosition()
 
 bool Sprite2D::CheckCollision(std::shared_ptr<Sprite2D> object)
 {
-	bool collisionX = m_Vec2DPos.x + m_iWidth / 2 >= object->m_Vec2DPos.x && object->m_Vec2DPos.x + object->m_iWidth / 2 >= m_Vec2DPos.x;
-	bool collisionY = m_Vec2DPos.y + m_iHeight / 2 >= object->m_Vec2DPos.y && object->m_Vec2DPos.y + object->m_iHeight / 2 >= m_Vec2DPos.y;
+	bool collisionX = m_Vec2DPos.x + m_iWidth / 2 >= object->m_Vec2DPos.x - object->m_iWidth/2 && object->m_Vec2DPos.x + object->m_iWidth / 2 >= m_Vec2DPos.x - m_iWidth/2;
+	bool collisionY = m_Vec2DPos.y + m_iHeight / 2 - m_iHeight / 4 >= object->m_Vec2DPos.y - m_iHeight/2 + m_iHeight / 4 && object->m_Vec2DPos.y + object->m_iHeight / 2 - m_iHeight / 4 >= m_Vec2DPos.y - m_iHeight/2 + m_iHeight / 4;
 	return collisionX && collisionY;
 }
 

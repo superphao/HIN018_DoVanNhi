@@ -11,7 +11,8 @@ private:
 	GLint			m_numSprites;
 	GLint			m_numEffects;
 	Vector2			m_Range;
-	GLint			temp = 1;
+	GLint			temp;
+	GLfloat			time;
 protected:
 	Vector2			m_Vec2DPos;
 	GLint			m_iHeight;

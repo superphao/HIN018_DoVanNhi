@@ -3,13 +3,13 @@
   MemoryOperators.cpp
   MemoryManager.cpp
   U_Math.cpp
-C:\Users\nhido\Downloads\gameloft\Programming_lesson_06\Utilities\src\U_Math.cpp(7,13): warning C4244: 'return': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\nhido\Downloads\gameloft\Programming_lesson_06\Utilities\src\U_Math.cpp(101,13): warning C4244: 'return': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\nhido\Downloads\gameloft\Programming_lesson_06\Utilities\src\U_Math.cpp(205,13): warning C4244: 'return': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\Utilities\src\U_Math.cpp(7,13): warning C4244: 'return': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\Utilities\src\U_Math.cpp(101,13): warning C4244: 'return': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\Utilities\src\U_Math.cpp(205,13): warning C4244: 'return': conversion from 'double' to 'GLfloat', possible loss of data
   esUtil_win.cpp
   esUtil.cpp
   esShader.cpp
   Generating Code...
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1498,5): warning MSB8012: TargetPath(C:\Users\nhido\Downloads\gameloft\Programming_lesson_06\\BIN-Nvidia\Utilities.lib) does not match the Library's OutputFile property value (C:\Users\nhido\Downloads\gameloft\Programming_lesson_06\BIN-Nvidia\UtilitiesD.lib). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1498,5): warning MSB8012: TargetPath(C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\\BIN-Nvidia\Utilities.lib) does not match the Library's OutputFile property value (C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\BIN-Nvidia\UtilitiesD.lib). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
 C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1500,5): warning MSB8012: TargetName(Utilities) does not match the Library's OutputFile property value (UtilitiesD). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
-  Utilities.vcxproj -> C:\Users\nhido\Downloads\gameloft\Programming_lesson_06\\BIN-Nvidia\Utilities.lib
+  Utilities.vcxproj -> C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\\BIN-Nvidia\Utilities.lib

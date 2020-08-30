@@ -1,5 +1,13 @@
 #pragma once
 #include "Sprite2D.h"
+
+enum EnemyType
+{
+    OBJECT64,
+    OBJECT32,
+    SANDBAR256,
+};
+
 class Enemy :
     public Sprite2D
 {
@@ -8,7 +16,11 @@ public:
     ~Enemy();
     void SetEffects(std::shared_ptr<Sprite2D> effect);
     std::shared_ptr<Sprite2D> GetEffects();
+    void SetName(std::string name);
+    std::string GetName();
+
 private:
     std::shared_ptr<Sprite2D> m_Effects;
+    std::string m_Name;
 };
 

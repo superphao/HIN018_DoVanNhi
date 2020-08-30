@@ -1,5 +1,7 @@
 ﻿cl : command line warning D9035: option 'Gm' has been deprecated and will be removed in a future release
-  GSIntro.cpp
-C:\Users\nhido\Downloads\gameloft\Programming_lesson_06\TrainingFramework\src\GameStates\GSIntro.cpp(30,54): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\nhido\Downloads\gameloft\Programming_lesson_06\TrainingFramework\src\GameStates\GSIntro.cpp(30,36): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-  TrainingFramework.vcxproj -> C:\Users\nhido\Downloads\gameloft\Programming_lesson_06\\BIN-Nvidia\TrainingFramework.exe
+  Sprite2D.cpp
+C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\TrainingFramework\src\GameObject\Sprite2D.cpp(156,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\TrainingFramework\src\GameObject\Sprite2D.cpp(157,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\TrainingFramework\src\GameObject\Sprite2D.cpp(167,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\TrainingFramework\src\GameObject\Sprite2D.cpp(168,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  TrainingFramework.vcxproj -> C:\Users\nhido\Documents\GitHub\HIN018_GameLoft_DoVanNhi\Programming_lesson_06\\BIN-Nvidia\TrainingFramework.exe
