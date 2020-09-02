@@ -53,7 +53,7 @@ void GSMenu::Init()
 	{
 
 		obj->SetSize(64, 64);
-		obj->Set2DPosition(i * 96 + (GLfloat)screenWidth / 2, 200);
+		obj->Set2DPosition(i * 96 + (GLfloat)screenWidth / 2, 240);
 		obj->SetNumFrame(9);
 		obj->SetNumSprite(13);
 		obj->SetFrame(Vector2(3 , i));
@@ -61,7 +61,7 @@ void GSMenu::Init()
 		texture = ResourceManagers::GetInstance()->GetTexture("SurfBoard64");
 		std::shared_ptr<Sprite2D> surfBoard = std::make_shared<Sprite2D>(model, shader, texture);
 		surfBoard->SetSize(64, 64);
-		surfBoard->Set2DPosition(i * 96 + (GLfloat)screenWidth / 2, 200);
+		surfBoard->Set2DPosition(i * 96 + (GLfloat)screenWidth / 2, 240);
 		surfBoard->SetNumFrame(3);
 		surfBoard->SetNumSprite(13);
 		surfBoard->SetFrame(Vector2(3, 2));
@@ -103,7 +103,7 @@ void GSMenu::Init()
 	//arow left
 	texture = ResourceManagers::GetInstance()->GetTexture("arrow");
 	std::shared_ptr<GameButton> button = std::make_shared<GameButton>(model, shader, texture);
-	button->Set2DPosition((GLfloat)screenWidth / 2 - 48, 200);
+	button->Set2DPosition((GLfloat)screenWidth / 2 - 48, 240);
 	button->SetSize(32, 32);
 	button->SetNumSprite(2);
 	button->SetFrame(Vector2(0, 0));
@@ -114,7 +114,7 @@ void GSMenu::Init()
 
 	//arow right
 	button = std::make_shared<GameButton>(model, shader, texture);
-	button->Set2DPosition((GLfloat)screenWidth / 2 + 48, 200);
+	button->Set2DPosition((GLfloat)screenWidth / 2 + 48, 240);
 	button->SetSize(32, 32); 
 	button->SetNumSprite(2);
 	button->SetFrame(Vector2(1, 0));
@@ -128,6 +128,11 @@ void GSMenu::Init()
 	std::shared_ptr<Font> font = ResourceManagers::GetInstance()->GetFont("arialbd");
 	m_Text_gameName = std::make_shared< Text>(shader, font, "LET'S SURF", TEXT_COLOR::BLACK, 2.0);
 	m_Text_gameName->Set2DPosition(Vector2(screenWidth / 2 - 140, 120));
+
+	//text description
+	std::string gameDecription = "Use A D to select a surfer and SPACEBAR to surfing";
+	m_Text_gameDecription = std::make_shared< Text>(shader, font, gameDecription, TEXT_COLOR::BLACK, 1.0);
+	m_Text_gameDecription->Set2DPosition(Vector2(screenWidth / 2 - 300, 170));
 }
 
 void GSMenu::Exit()
@@ -241,6 +246,7 @@ void GSMenu::Draw()
 		it->Draw();
 	}
 	m_Text_gameName->Draw();
+	m_Text_gameDecription->Draw();
 }
 
 void GSMenu::ChangePlayerLeft()
