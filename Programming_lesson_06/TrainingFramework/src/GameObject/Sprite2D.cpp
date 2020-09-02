@@ -23,8 +23,9 @@ Sprite2D::Sprite2D(std::shared_ptr<Models> model, std::shared_ptr<Shaders> shade
 	m_pShader = shader;
 	m_pCamera = nullptr;
 	m_pTexture = texture;
-	m_xShift = 0;
-	m_yShift = 0;
+	m_CurrentFrame = Vector2(0, 0);
+	m_NumFrame = 1;
+	m_NumSprite = 1;
 	time = 0;
 	temp = 1;
 
@@ -42,8 +43,9 @@ Sprite2D::Sprite2D(std::shared_ptr<Models> model, std::shared_ptr<Shaders> shade
 	m_pCamera = nullptr;
 	m_pTexture = nullptr;
 	m_Color = color;
-	m_xShift = 0;
-	m_yShift = 0;
+	m_CurrentFrame = Vector2(0, 0);
+	m_NumFrame = 1;
+	m_NumSprite = 1;
 	time = 0;
 	temp = 1;
 
@@ -106,10 +108,21 @@ void Sprite2D::Draw()
 		glVertexAttribPointer(iTempShaderVaribleGLID, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), VETEX_UV);
 	}
 
+
 	iTempShaderVaribleGLID = -1;
-	iTempShaderVaribleGLID = m_pShader->GetUniformLocation((char*) "temp");
+	iTempShaderVaribleGLID = m_pShader->GetUniformLocation((char*)"u_CurrentFrame");
 	if (iTempShaderVaribleGLID != -1)
-		glUniform2f(iTempShaderVaribleGLID, m_xShift, -m_yShift);
+		glUniform2f(iTempShaderVaribleGLID, m_CurrentFrame.x, m_CurrentFrame.y);
+
+	iTempShaderVaribleGLID = -1;
+	iTempShaderVaribleGLID = m_pShader->GetUniformLocation((char*)"u_NumberFrame");	
+	if (iTempShaderVaribleGLID != -1)
+		glUniform1f(iTempShaderVaribleGLID, (GLfloat) m_NumFrame);
+
+	iTempShaderVaribleGLID = -1;
+	iTempShaderVaribleGLID = m_pShader->GetUniformLocation((char*)"u_NumberSprite");
+	if (iTempShaderVaribleGLID != -1)
+		glUniform1f(iTempShaderVaribleGLID, (GLfloat) m_NumSprite);
 
 	iTempShaderVaribleGLID = -1;
 	iTempShaderVaribleGLID = m_pShader->GetUniformLocation((char*)"u_alpha");
@@ -133,7 +146,7 @@ void Sprite2D::Draw()
 
 void Sprite2D::Update(GLfloat deltatime)
 {
-	Move(m_Range, deltatime);
+	
 }
 
 
@@ -185,70 +198,51 @@ void Sprite2D::SetSize(GLint width, GLint height)
 	CaculateWorldMatrix();
 }
 
-
-void Sprite2D::SetNumEffects(GLint numEffects)
+void Sprite2D::SetFrame(Vector2 nextFrame)
 {
-	m_numEffects = numEffects;
+	m_CurrentFrame = nextFrame;
 }
 
-void Sprite2D::SetNumSprites(GLint numSprites)
+void Sprite2D::SetNumFrame(GLint numFrame)
 {
-	m_numSprites = numSprites;
+	m_NumFrame = numFrame;
 }
 
-GLint Sprite2D::GetNumSprites()
+void Sprite2D::SetNumSprite(GLint numSprites)
 {
-	return m_numSprites;
+	m_NumSprite = numSprites;
 }
 
-GLint Sprite2D::GetNumEffects()
+GLint Sprite2D::GetNumSprite()
 {
-	return m_numEffects;
+	return m_NumSprite;
 }
 
-void Sprite2D::Move(Vector2 range, GLfloat deltaTime) {
-	Set2DPosition(m_Vec2DPos.x - range.x * 60 * deltaTime, m_Vec2DPos.y - range.y * 60 * deltaTime);
-	if (m_Vec2DPos.x > screenWidth + (GLfloat)screenWidth / 2) m_Vec2DPos.x = -(GLfloat)screenWidth / 2;
-	//if (m_Vec2DPos.y > screenHeight) m_Vec2DPos.y = 0;
-	if (m_Vec2DPos.x < -(GLfloat)screenWidth / 2) m_Vec2DPos.x = screenWidth + (GLfloat)screenWidth / 2;
-	if (m_Vec2DPos.y < -(GLfloat)screenHeight / 2) m_Vec2DPos.y = screenHeight + (GLfloat)screenHeight / 2;
+GLint Sprite2D::GetNumFrame()
+{
+	return m_NumFrame;
+}
+
+Vector2 Sprite2D::GetFrame()
+{
+	return m_CurrentFrame;
 }
 
 void Sprite2D::Animation(GLfloat deltatime)
 {
 	if (time > 1) {
-		if (temp <= m_numEffects - 1) {
-			m_yShift = m_yShift - (GLfloat)1 / m_numEffects;
+		if (temp <= m_NumFrame - 1) {
+			m_CurrentFrame.y = m_CurrentFrame.y - 1;
 		}
-		else if (temp > m_numEffects - 1) {
-			m_yShift = m_yShift + (GLfloat)1 / m_numEffects;
+		else if (temp > m_NumFrame - 1) {
+			m_CurrentFrame.y = m_CurrentFrame.y + 1;
 		}
-		temp = temp % (2 * m_numEffects - 2) + 1;
-		time = 0;
+		temp = temp % (2 * m_NumFrame - 2) + 1;
+		time -= 1;
 	}
 	time = time + 3*deltatime;
 }
 
-void Sprite2D::SetRange(Vector2 range)
-{
-	m_Range = range;
-}
-
-Vector2 Sprite2D::GetRange()
-{
-	return m_Range;
-}
-
-void Sprite2D::SetShift(GLfloat xShift, GLfloat yShift)
-{
-	m_xShift = xShift;
-	m_yShift = yShift;
-}
-
-Vector2 Sprite2D::GetXYShiftPosition()
-{
-	return Vector2(m_xShift, m_yShift);
-}
 
 bool Sprite2D::CheckCollision(std::shared_ptr<Sprite2D> object)
 {

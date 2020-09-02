@@ -12,7 +12,7 @@
 #include "GameObject/Text.h"
 #include "GameObject/Player.h"
 #include "GameObject/SurfBoard.h"
-#include "GameObject/Enemy.h"
+#include "GameObject/DynamicSprite.h"
 #include<cstdlib>
 #include<ctime>
 

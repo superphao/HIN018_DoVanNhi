@@ -28,7 +28,6 @@ private:
 	std::shared_ptr<Text>  m_Text_gameName;
 	std::vector< std::shared_ptr<Sprite2D>> m_ArrWater;
 	std::vector< std::shared_ptr<Player>> m_ListPlayer;
-	std::vector< std::shared_ptr<SurfBoard>> m_ListSurfBoard;
 	std::shared_ptr<Sprite2D> m_ArrowLeft;
 	std::shared_ptr<Sprite2D> m_ArrowRight;
 };

@@ -157,7 +157,7 @@ Vector4 Text::EnumToVector(TEXT_COLOR color)
 		vecColor = Vector4(0.0f, 0.9f, 0.9f, 1.0f);
 		break;
 	default:
-		vecColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		vecColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		break;
 	}
 	return vecColor;

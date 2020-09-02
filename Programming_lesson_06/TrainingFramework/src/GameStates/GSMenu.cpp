@@ -41,10 +41,9 @@ void GSMenu::Init()
 		}
 	}
 
-	//list player
-	model = ResourceManagers::GetInstance()->GetModel("Player");
-	texture = ResourceManagers::GetInstance()->GetTexture("player64");
+	//lisr player
 	shader = ResourceManagers::GetInstance()->GetShader("ObjectShader");
+	texture = ResourceManagers::GetInstance()->GetTexture("player64");
 	for (int i = 0; i < 9; i++) 
 	{
 		m_ListPlayer.push_back(std::make_shared<Player>(model, shader, texture));
@@ -52,29 +51,22 @@ void GSMenu::Init()
 	i = 0;
 	for(auto &obj : m_ListPlayer)
 	{
+
 		obj->SetSize(64, 64);
 		obj->Set2DPosition(i * 96 + (GLfloat)screenWidth / 2, 200);
-		obj->SetNumEffects(9);
-		obj->SetNumSprites(13);
-		obj->SetShift((GLfloat)3 / obj->GetNumSprites(), (GLfloat)i / obj->GetNumEffects());
-		obj->Init();
-		i++;
-	}
-	//surfboard
-	model = ResourceManagers::GetInstance()->GetModel("SurfBoard");
-	texture = ResourceManagers::GetInstance()->GetTexture("SurfBoard64");
-	for (int i = 0; i < 9; i++)
-	{
-		m_ListSurfBoard.push_back(std::make_shared<SurfBoard>(model, shader, texture));
-	}
-	i = 0;
-	for (auto& obj : m_ListSurfBoard)
-	{
-		obj->SetSize(64, 64);
-		obj->Set2DPosition(i * 96 + (GLfloat)screenWidth / 2, 200);
-		obj->SetNumEffects(3);
-		obj->SetNumSprites(13);
-		obj->SetShift((GLfloat) 3 / obj->GetNumSprites(), (GLfloat)2 / obj->GetNumEffects());
+		obj->SetNumFrame(9);
+		obj->SetNumSprite(13);
+		obj->SetFrame(Vector2(3 , i));
+
+		texture = ResourceManagers::GetInstance()->GetTexture("SurfBoard64");
+		std::shared_ptr<Sprite2D> surfBoard = std::make_shared<Sprite2D>(model, shader, texture);
+		surfBoard->SetSize(64, 64);
+		surfBoard->Set2DPosition(i * 96 + (GLfloat)screenWidth / 2, 200);
+		surfBoard->SetNumFrame(3);
+		surfBoard->SetNumSprite(13);
+		surfBoard->SetFrame(Vector2(3, 2));
+		surfBoard->Init();
+		obj->SetSurfBoard(surfBoard);
 		obj->Init();
 		i++;
 	}
@@ -109,11 +101,12 @@ void GSMenu::Init()
 	//m_listButton.push_back(button);
 
 	//arow left
-	model = ResourceManagers::GetInstance()->GetModel("Arrow");
 	texture = ResourceManagers::GetInstance()->GetTexture("arrow");
 	std::shared_ptr<GameButton> button = std::make_shared<GameButton>(model, shader, texture);
 	button->Set2DPosition((GLfloat)screenWidth / 2 - 48, 200);
 	button->SetSize(32, 32);
+	button->SetNumSprite(2);
+	button->SetFrame(Vector2(0, 0));
 	button->SetOnClick([]() {
 
 		});
@@ -123,7 +116,8 @@ void GSMenu::Init()
 	button = std::make_shared<GameButton>(model, shader, texture);
 	button->Set2DPosition((GLfloat)screenWidth / 2 + 48, 200);
 	button->SetSize(32, 32); 
-	button->SetShift((GLfloat)1/2, 0);
+	button->SetNumSprite(2);
+	button->SetFrame(Vector2(1, 0));
 	button->SetOnClick([]() {
 
 		});
@@ -169,7 +163,7 @@ void GSMenu::HandleKeyEvents(int key, bool bIsPressed)
 				if (obj->Get2DPosition().x == (GLfloat)screenWidth / 2)
 				{
 					//lay vi phi cua player da chon trong player texture
-					DefautPlayer = (GLint) (obj->GetXYShiftPosition().y * obj->GetNumEffects());
+					DefautPlayer = (GLint) (obj->GetFrame().y);
 					break;
 				}
 			}
@@ -206,24 +200,19 @@ void GSMenu::HandleTouchEvents(int x, int y, bool bIsPressed)
 
 void GSMenu::Update(float deltaTime)
 {
-	for (auto& obj : m_ListSurfBoard)
-	{
-		if (obj->Get2DPosition().x == (GLfloat)screenWidth / 2)
-		{
-			obj->MenuSurfAnimation(deltaTime);
-		}
-		/*else 
-			obj->SetShift((GLfloat)3 / obj->GetNumSprites(), obj->GetXYShiftPosition().y);*/
-		obj->Animation(deltaTime);
-	}
+
 	for (auto& obj : m_ListPlayer)
 	{
+		if (obj->GetSurfBoard() != nullptr)
+		{
+			obj->GetSurfBoard()->Animation(deltaTime);
+		}
 		if (obj->Get2DPosition().x == (GLfloat)screenWidth / 2)
 		{
 			obj->MenuPlayerAnimation(deltaTime);
 		}
 		/*else 
-			obj->SetShift((GLfloat)3 / obj->GetNumSprites(), obj->GetXYShiftPosition().y);*/
+			obj->SetFrame(Vector2((GLfloat)3 / obj->GetNumSprite(), obj->GetXYShiftPosition().y);*/
 	}
 	//m_BackGround->Update(deltaTime);
 	/*for (auto it : m_listButton)
@@ -238,12 +227,12 @@ void GSMenu::Draw()
 	{
 		obj->Draw();
 	}
-	for (auto& obj : m_ListSurfBoard)
-	{
-		obj->Draw();
-	}
+	//for (auto& obj : m_ListSurfBoard)
+	//	obj->Draw();
 	for (auto& obj : m_ListPlayer)
 	{
+		if(obj->GetSurfBoard() != nullptr)
+			obj->GetSurfBoard()->Draw();
 		obj->Draw();
 	}
 	//m_BackGround->Draw();
@@ -259,10 +248,7 @@ void GSMenu::ChangePlayerLeft()
 	for (auto& obj : m_ListPlayer)
 	{
 		obj->Set2DPosition(obj->Get2DPosition().x + 96, obj->Get2DPosition().y);
-	}
-	for (auto& obj : m_ListSurfBoard)
-	{
-		obj->Set2DPosition(obj->Get2DPosition().x + 96, obj->Get2DPosition().y);
+		obj->GetSurfBoard()->Set2DPosition(obj->Get2DPosition());
 	}
 }
 
@@ -271,9 +257,6 @@ void GSMenu::ChangePlayerRight()
 	for (auto& obj : m_ListPlayer)
 	{
 		obj->Set2DPosition(obj->Get2DPosition().x - 96, obj->Get2DPosition().y);
-	}
-	for (auto& obj : m_ListSurfBoard)
-	{
-		obj->Set2DPosition(obj->Get2DPosition().x - 96, obj->Get2DPosition().y);
+		obj->GetSurfBoard()->Set2DPosition(obj->Get2DPosition());
 	}
 }

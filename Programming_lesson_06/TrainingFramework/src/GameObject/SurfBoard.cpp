@@ -15,17 +15,17 @@ SurfBoard::~SurfBoard()
 void SurfBoard::MenuSurfAnimation(GLfloat deltaTime)
 {
 	if (time > 1) {
-		//printf("%f", GetXYShiftPosition().x);
-		if (tmp_Player <= GetNumSprites() - 9) {
-			//SetShift(GetXYShiftPosition().x, GetXYShiftPosition().y - (GLfloat)1 / GetNumSprites());
-			SetShift(GetXYShiftPosition().x - (GLfloat)1 / GetNumSprites(), GetXYShiftPosition().y);
+		//printf("%f", m_CurrentFrame.x);
+		if (tmp_Player <= m_NumSprite - 9) {
+			//SetFrame(Vector2((m_CurrentFrame.x, m_CurrentFrame.y - (GLfloat)1 / m_NumSprite);
+			SetFrame(Vector2(m_CurrentFrame.x - 1, m_CurrentFrame.y));
 		}
-		else if (tmp_Player > GetNumSprites() - 9) {
-			//SetShift(GetXYShiftPosition().x, GetXYShiftPosition().y + (GLfloat)1 / GetNumSprites());
-			SetShift(GetXYShiftPosition().x + (GLfloat)1 / GetNumSprites(), GetXYShiftPosition().y);
+		else if (tmp_Player > m_NumSprite - 9) {
+			//SetFrame(Vector2((m_CurrentFrame.x, m_CurrentFrame.y + (GLfloat)1 / m_NumSprite);
+			SetFrame(Vector2(m_CurrentFrame.x + 1, m_CurrentFrame.y));
 		}
-		tmp_Player = tmp_Player % (2 * GetNumSprites() - 16 - 2) + 1;
-		time = 0;
+		tmp_Player = tmp_Player % (2 * m_NumSprite - 16 - 2) + 1;
+		time -= 1;
 	}
 	time = time + 4*deltaTime;
 }

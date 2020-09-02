@@ -32,11 +32,13 @@ public:
 
 private:
 
-	std::shared_ptr<Sprite2D>	m_BackGround;
-	std::shared_ptr<Text>		m_score;
-	std::shared_ptr<Sprite2D>	m_Player;
-	std::shared_ptr<Sprite2D>	m_SurfBoard;
-	std::vector<std::shared_ptr<Sprite2D>>	m_ArrWater;
-	std::vector<std::shared_ptr<Enemy>>	m_ArrObject;
+	std::shared_ptr<Sprite2D> m_BackGround;
+	std::shared_ptr<Text> m_score;
+	std::shared_ptr<Player>	m_Player;
+	std::vector<std::shared_ptr<DynamicSprite>>	m_ArrWater;
+	std::vector<std::shared_ptr<DynamicSprite>>	m_ArrObject;
+	StateSprite m_StateSprite;
+	StatePlayer m_StatePlayer;
+	std::vector<std::shared_ptr<Sprite2D>> m_ListHeart;
 };
 
