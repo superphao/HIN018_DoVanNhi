@@ -11,7 +11,6 @@
 
 extern int screenWidth; //need get on Graphic engine
 extern int screenHeight; //need get on Graphic engine
-GLfloat count = 0;
 
 GSPlay::GSPlay()
 {
@@ -31,6 +30,10 @@ void GSPlay::Init()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	m_StateSprite = FREEZE;
+	m_SttGamePlay = GAME_RUNNING;
+	m_TimeBornObj = 0;
+	m_TextScore = 0;
+	m_isPause = false;
 
 	auto model = ResourceManagers::GetInstance()->GetModel("Sprite2D");
 	auto texture = ResourceManagers::GetInstance()->GetTexture("bg_play");
@@ -111,10 +114,16 @@ void GSPlay::Init()
 	//score
 	shader = ResourceManagers::GetInstance()->GetShader("TextShader");
 	std::shared_ptr<Font> font = ResourceManagers::GetInstance()->GetFont("arialbd");
-	m_score = std::make_shared< Text>(shader, font, "score: " + std::to_string(count), TEXT_COLOR::BLACK, 1.0);
-	m_score->Set2DPosition(Vector2((GLfloat) screenWidth/2 - 70, 25));
+	m_score = std::make_shared< Text>(shader, font, "score: " , TEXT_COLOR::BLACK, 0.7);
+	m_score->Set2DPosition(Vector2((GLfloat) screenWidth/2 - 50, 25));
 
+	//text state game play
+	m_TextSttGame = std::make_shared< Text>(shader, font, "SURF PAUSED", TEXT_COLOR::BLACK, 1.5);
+	m_TextSttGame->Set2DPosition(Vector2((GLfloat)screenWidth / 2 - 110, 100));
 
+	//text decription state game
+	m_DesciptSttGame = std::make_shared< Text>(shader, font, "SPACEBAR to resume surfing", TEXT_COLOR::BLACK, 0.8);
+	m_DesciptSttGame->Set2DPosition(Vector2((GLfloat)screenWidth / 2 - 120, 140));
 }
 
 void GSPlay::Exit()
@@ -125,12 +134,28 @@ void GSPlay::Exit()
 
 void GSPlay::Pause()
 {
-
+	m_SttGamePlay = GAME_PAUSE;
+	m_isPause = true;
 }
 
 void GSPlay::Resume()
 {
+	m_SttGamePlay = GAME_RUNNING;
+	m_isPause = false;
+}
 
+void GSPlay::GameOver()
+{
+	m_SttGamePlay = GAME_OVER;
+	m_TextSttGame->setText("SURF AGAIN");
+	m_DesciptSttGame->setText("SPACEBAR to surf again");
+	m_isPause = true;
+}
+
+void GSPlay::ReStart()
+{
+	GameStateMachine::GetInstance()->PopState();
+	GameStateMachine::GetInstance()->ChangeState(StateTypes::STATE_Play);
 }
 
 
@@ -193,7 +218,20 @@ void GSPlay::HandleKeyEvents(int key, bool bIsPressed)
 			if (m_StatePlayer == PLAYER_DIE)
 				m_StatePlayer = PLAYER_NORMAL;
 			break;
+		case VK_SPACE:
+			if (m_SttGamePlay == GAME_RUNNING)
+				Pause();
+			else if (m_SttGamePlay == GAME_PAUSE)
+				Resume();
+			else if (m_SttGamePlay == GAME_OVER)
+				ReStart();
+			break;
+		default:
+			if (m_SttGamePlay == GAME_RUNNING)
+				Pause();
+			break;
 		}
+
 	}
 }
 
@@ -203,44 +241,49 @@ void GSPlay::HandleTouchEvents(int x, int y, bool bIsPressed)
 
 void GSPlay::Update(float deltaTime)
 {
-	// sinh object moi
-	if (count > 1) {
-		RandomSprite();
-		count = 0;
-	}
-	//count += m_ArrObject.back()->GetSpeed() * deltaTime;
-	count += deltaTime;
-
-	//xu ly va cham
-	this->DoCollision();
-
-	//update
-	m_Player->Update(deltaTime, m_StatePlayer);
-	//m_Player->GetSurfBoard()->Update(deltaTime)
-	m_Player->GetSurfBoard()->Animation(deltaTime);
-	for (auto& obj : m_ArrWater) {
-		obj->Update(deltaTime, m_StateSprite);
-	}
-	for (auto& obj : m_ArrObject) {
-		obj->Update(deltaTime, m_StateSprite);
-		if (obj->GetEffects() != nullptr)
-		{
-			obj->GetEffects()->Update(deltaTime, m_StateSprite);
-			obj->GetEffects()->Animation(deltaTime);
+	if (!m_isPause)
+	{
+		// sinh object moi
+		if (m_TimeBornObj > 1) {
+			RandomSprite();
+			m_TimeBornObj -= 1;
 		}
-	}
+		//count += m_ArrObject.back()->GetSpeed() * deltaTime;
+		m_TimeBornObj += deltaTime;
 
-	//xoa object da di ra ngoai man hinh
-	for (auto& obj : m_ArrObject) {
-		if (obj->Get2DPosition().y < - (GLfloat)screenHeight / 4)
-		{
-			obj.swap(m_ArrObject.back());
-			m_ArrObject.pop_back();
-			//printf("%d", m_ArrObject.size());
-			break;
+		//xu ly va cham
+		this->DoCollision();
+
+		//update
+		m_Player->Update(deltaTime, m_StatePlayer);
+		//m_Player->GetSurfBoard()->Update(deltaTime)
+		m_Player->GetSurfBoard()->Animation(deltaTime);
+		for (auto& obj : m_ArrWater) {
+			obj->Update(deltaTime, m_StateSprite);
 		}
+		for (auto& obj : m_ArrObject) {
+			obj->Update(deltaTime, m_StateSprite);
+			if (obj->GetEffects() != nullptr)
+			{
+				obj->GetEffects()->Update(deltaTime, m_StateSprite);
+				obj->GetEffects()->Animation(deltaTime);
+			}
+		}
+
+		//xoa object da di ra ngoai man hinh
+		for (auto& obj : m_ArrObject) {
+			if (obj->Get2DPosition().y < -(GLfloat)screenHeight / 4)
+			{
+				obj.swap(m_ArrObject.back());
+				m_ArrObject.pop_back();
+				//printf("%d", m_ArrObject.size());
+				break;
+			}
+		}
+		m_TextScore += m_ArrObject.back()->GetSpeed() * deltaTime;
+		m_score->setText("Score: " + std::to_string((GLint) m_TextScore) + "m");
 	}
-	m_score->setText("Score: " + std::to_string(count));
+	
 }
 
 void GSPlay::Draw()
@@ -261,9 +304,13 @@ void GSPlay::Draw()
 			obj->GetEffects()->Draw();
 		}
 	}
-
 	//m_BackGround->Draw();
 	m_score->Draw();
+	if (m_SttGamePlay == GAME_PAUSE || m_SttGamePlay == GAME_OVER)
+	{
+		m_TextSttGame->Draw();
+		m_DesciptSttGame->Draw();
+	}
 }
 
 void GSPlay::SetNewPostionForBullet()
@@ -277,7 +324,15 @@ void GSPlay::DoCollision()
 		{
 			m_StateSprite = FREEZE;
 			m_StatePlayer = PLAYER_DIE;
+			//printf("%d", m_Player->GetHeart());
+			if(m_Player->GetHeart() >= 0 && m_Player->GetHeart() <3)
+				m_ListHeart.at(m_Player->GetHeart())->SetFrame(Vector2(0, 3));
+			break;
 		}
+	if (m_Player->GetHeart() == 0)
+	{
+		GameOver();
+	}
 }
 
 void GSPlay::RandomSprite()

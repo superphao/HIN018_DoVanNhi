@@ -15,6 +15,14 @@ DynamicSprite::~DynamicSprite()
 
 void DynamicSprite::Update(GLfloat deltaTime, StateSprite stt)
 {
+	if (stt == FREEZE)
+	{
+		m_Speed = 0;
+	}
+	else
+	{
+		m_Speed = 5;
+	}
 	switch (stt)
 	{
 	case MOVE_FORWARD:

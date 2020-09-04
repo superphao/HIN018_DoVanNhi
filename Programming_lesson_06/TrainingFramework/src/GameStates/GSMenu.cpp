@@ -126,8 +126,8 @@ void GSMenu::Init()
 	////text game title
 	shader = ResourceManagers::GetInstance()->GetShader("TextShader");
 	std::shared_ptr<Font> font = ResourceManagers::GetInstance()->GetFont("arialbd");
-	m_Text_gameName = std::make_shared< Text>(shader, font, "LET'S SURF", TEXT_COLOR::BLACK, 2.0);
-	m_Text_gameName->Set2DPosition(Vector2(screenWidth / 2 - 140, 120));
+	m_Text_gameName = std::make_shared< Text>(shader, font, "LET'S SURF", TEXT_COLOR::BLACK, 1.5);
+	m_Text_gameName->Set2DPosition(Vector2(screenWidth / 2 - 110, 120));
 
 	//text description
 	std::string gameDecription = "Use A D to select a surfer and SPACEBAR to surfing";

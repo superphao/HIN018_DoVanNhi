@@ -52,6 +52,7 @@ void Player::Update(GLfloat deltaTime, StatePlayer stt)
 	{
 	case PLAYER_DIE:
 		m_TimeProtected = 2;
+		if (m_TimeDie == 2) m_Heart--;
 		if (m_TimeDie > 1)
 		{
 			m_CurrentFrame = Vector2(6, m_CurrentFrame.y);
@@ -60,18 +61,21 @@ void Player::Update(GLfloat deltaTime, StatePlayer stt)
 		}
 		else
 		{
-			if ((GLint)m_TimeDie % 2 == 0)
+			if (m_Heart > 0)
 			{
-				m_CurrentFrame = Vector2(-1, m_CurrentFrame.y);
-				m_SurfBoard->SetFrame(Vector2(-1, m_SurfBoard->GetFrame().y));
+				if ((GLint)m_TimeDie % 2 == 0)
+				{
+					m_CurrentFrame = Vector2(-1, m_CurrentFrame.y);
+					m_SurfBoard->SetFrame(Vector2(-1, m_SurfBoard->GetFrame().y));
+				}
+				else
+				{
+					m_CurrentFrame = Vector2(0, m_CurrentFrame.y);
+					m_SurfBoard->SetFrame(Vector2(0, m_SurfBoard->GetFrame().y));
+				}
+				m_TimeDie -= deltaTime * 4;
+				m_isProtected = true;
 			}
-			else
-			{
-				m_CurrentFrame = Vector2(0, m_CurrentFrame.y);
-				m_SurfBoard->SetFrame(Vector2(0, m_SurfBoard->GetFrame().y));
-			}
-			m_TimeDie -= deltaTime*4;
-			m_isProtected = true;
 		}
 
 		break;
@@ -103,4 +107,14 @@ void Player::Update(GLfloat deltaTime, StatePlayer stt)
 GLboolean Player::CheckProtected()
 {
 	return m_isProtected;
+}
+
+void Player::SetHeart(GLint heart)
+{
+	m_Heart = heart;
+}
+
+GLint Player::GetHeart()
+{
+	return m_Heart;
 }

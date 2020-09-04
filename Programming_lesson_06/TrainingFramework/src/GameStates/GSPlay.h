@@ -5,6 +5,13 @@ class Sprite2D;
 class Sprite3D;
 class Text;
 
+enum StateGamePlay
+{
+	GAME_PAUSE,
+	GAME_OVER,
+	GAME_RUNNING,
+};
+
 class GSPlay :
 	public GameStateBase
 {
@@ -17,6 +24,8 @@ public:
 
 	void Pause();
 	void Resume();
+	void GameOver();
+	void ReStart();
 
 	void HandleEvents();
 	void HandleKeyEvents(int key, bool bIsPressed);
@@ -39,6 +48,12 @@ private:
 	std::vector<std::shared_ptr<DynamicSprite>>	m_ArrObject;
 	StateSprite m_StateSprite;
 	StatePlayer m_StatePlayer;
+	StateGamePlay m_SttGamePlay;
 	std::vector<std::shared_ptr<Sprite2D>> m_ListHeart;
+	GLboolean m_isPause;
+	std::shared_ptr<Text> m_TextSttGame;
+	std::shared_ptr<Text> m_DesciptSttGame;
+	GLfloat m_TimeBornObj;
+	GLfloat m_TextScore;
 };
 

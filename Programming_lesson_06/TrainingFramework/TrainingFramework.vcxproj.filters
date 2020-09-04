@@ -72,9 +72,6 @@
     <ClCompile Include="src\GameObject\Player.cpp">
       <Filter>TrainingFramework\src\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="src\GameObject\SurfBoard.cpp">
-      <Filter>TrainingFramework\src\GameObject</Filter>
-    </ClCompile>
     <ClCompile Include="src\GameObject\DynamicSprite.cpp">
       <Filter>TrainingFramework\src\GameObject</Filter>
     </ClCompile>
@@ -138,9 +135,6 @@
       <Filter>TrainingFramework\src\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="src\GameObject\Player.h">
-      <Filter>TrainingFramework\src\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="src\GameObject\SurfBoard.h">
       <Filter>TrainingFramework\src\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="src\GameObject\DynamicSprite.h">
