@@ -104,7 +104,7 @@ void Player::Update(GLfloat deltaTime, StatePlayer stt)
 	}
 }
 
-GLboolean Player::CheckProtected()
+GLboolean Player::IsProtected()
 {
 	return m_isProtected;
 }

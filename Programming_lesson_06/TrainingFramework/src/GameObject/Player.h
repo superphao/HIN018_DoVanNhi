@@ -18,7 +18,7 @@ public:
     void SetSurfBoard(std::shared_ptr<Sprite2D> surfBoard);
     std::shared_ptr<Sprite2D> GetSurfBoard();
     void Update(GLfloat deltaTime, StatePlayer stt);
-    GLboolean CheckProtected();
+    GLboolean IsProtected();
     void SetHeart(GLint heart);
     GLint GetHeart();
 

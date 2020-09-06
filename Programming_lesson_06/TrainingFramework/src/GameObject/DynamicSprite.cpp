@@ -6,24 +6,39 @@ DynamicSprite::DynamicSprite(std::shared_ptr<Models> model, std::shared_ptr<Shad
 	: Sprite2D(model, shader, texture)
 {
 	m_Effects = nullptr;
-	m_Speed = 5;
+	m_Speed = 0;
 }
+
+DynamicSprite::DynamicSprite(std::shared_ptr<Models> model, std::shared_ptr<Shaders> shader, std::shared_ptr<Texture> texture, GLfloat speed)
+	: Sprite2D(model, shader, texture)
+{
+	m_Effects = nullptr;
+	m_Speed = speed;
+}
+
 
 DynamicSprite::~DynamicSprite()
 {
 }
 
-void DynamicSprite::Update(GLfloat deltaTime, StateSprite stt)
+void DynamicSprite::Update(GLfloat deltaTime, StateMoveSprite stt_move, StateSprite stt_sprite)
 {
-	if (stt == FREEZE)
+	switch (stt_sprite)
 	{
-		m_Speed = 0;
-	}
-	else
-	{
+	case SLOWDOWN:
+		m_Speed = 2;
+		break;
+	case NORMAL:
 		m_Speed = 5;
+		break;
+	case STOP:
+		m_Speed = 0;
+		break;
+	default:
+		break;
 	}
-	switch (stt)
+
+	switch (stt_move)
 	{
 	case MOVE_FORWARD:
 		Set2DPosition(m_Vec2DPos.x, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
@@ -47,6 +62,8 @@ void DynamicSprite::Update(GLfloat deltaTime, StateSprite stt)
 		Set2DPosition(m_Vec2DPos.x, m_Vec2DPos.y);
 		break;
 	}
+
+
 	if (GetName() == "water") {
 		if (m_Vec2DPos.x > (GLfloat)screenWidth + (GLfloat)screenWidth / 2) m_Vec2DPos.x = -(GLfloat)screenWidth / 2;
 		//if (m_Vec2DPos.y > screenHeight) m_Vec2DPos.y = 0;

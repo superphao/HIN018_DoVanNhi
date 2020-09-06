@@ -29,10 +29,11 @@ void GSPlay::Init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	m_StateSprite = FREEZE;
+	m_StateMove = FREEZE;
 	m_SttGamePlay = GAME_RUNNING;
 	m_TimeBornObj = 0;
 	m_TextScore = 0;
+	m_SpeedMove = 5;
 	m_isPause = false;
 
 	auto model = ResourceManagers::GetInstance()->GetModel("Sprite2D");
@@ -64,7 +65,7 @@ void GSPlay::Init()
 	//Water
 	texture = ResourceManagers::GetInstance()->GetTexture("water256");
 	for (int i = 0; i < 16; ++i) {
-		m_ArrWater.push_back(std::make_shared<DynamicSprite>(model, shader, texture));
+		m_ArrWater.push_back(std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove));
 	}
 	int i = 0, j = 0;
 	for (auto& obj : m_ArrWater) {
@@ -82,14 +83,14 @@ void GSPlay::Init()
 
 	//object
 	texture = ResourceManagers::GetInstance()->GetTexture("objects64");
-	m_ArrObject.push_back(std::make_shared<DynamicSprite>(model, shader, texture));
+	m_ArrObject.push_back(std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove));
 	m_ArrObject.at(0)->SetSize(64, 64);
 	m_ArrObject.at(0)->SetNumSprite(30);
 	srand(time(NULL));
 	m_ArrObject.at(0)->Set2DPosition((GLfloat)(rand() % 640), rand() % (screenHeight / 2) + m_Player->Get2DPosition().y);
 	m_ArrObject.at(0)->Init();
 	texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
-	std::shared_ptr<DynamicSprite> effect = std::make_shared<DynamicSprite>(model, shader, texture);
+	std::shared_ptr<DynamicSprite> effect = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
 	effect->SetSize(96, 96);
 	effect->Set2DPosition(m_ArrObject.back()->Get2DPosition());
 	effect->SetNumFrame(3);
@@ -171,49 +172,49 @@ void GSPlay::HandleKeyEvents(int key, bool bIsPressed)
 		case 'S':
 			m_Player->SetFrame(Vector2(3, m_Player->GetFrame().y));
 			m_Player->GetSurfBoard()->SetFrame(Vector2(3, m_Player->GetSurfBoard()->GetFrame().y));
-			m_StateSprite = MOVE_FORWARD;
+			m_StateMove = MOVE_FORWARD;
 			if(m_StatePlayer == PLAYER_DIE)
 				m_StatePlayer = PLAYER_NORMAL;
 			break;
 		case 'W':
 			m_Player->SetFrame(Vector2(0, m_Player->GetFrame().y));
 			m_Player->GetSurfBoard()->SetFrame(Vector2(0, m_Player->GetSurfBoard()->GetFrame().y));
-			m_StateSprite = FREEZE;
+			m_StateMove = FREEZE;
 			break;
 		case 'A':
-			if (m_StateSprite == MOVE_LEFT) {
+			if (m_StateMove == MOVE_LEFT) {
 				m_Player->SetFrame(Vector2(1, m_Player->GetFrame().y));
 				m_Player->GetSurfBoard()->SetFrame(Vector2(1, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateSprite = MOVE_LEFT_PLUS;
+				m_StateMove = MOVE_LEFT_PLUS;
 			}
-			else if (m_StateSprite == MOVE_LEFT_PLUS) {
+			else if (m_StateMove == MOVE_LEFT_PLUS) {
 				m_Player->SetFrame(Vector2(1, m_Player->GetFrame().y));
 				m_Player->GetSurfBoard()->SetFrame(Vector2(1, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateSprite = MOVE_LEFT_PLUS;
+				m_StateMove = MOVE_LEFT_PLUS;
 			}
 			else {
 				m_Player->SetFrame(Vector2(2, m_Player->GetFrame().y));
 				m_Player->GetSurfBoard()->SetFrame(Vector2(2, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateSprite = MOVE_LEFT;
+				m_StateMove = MOVE_LEFT;
 			}
 			if (m_StatePlayer == PLAYER_DIE)
 				m_StatePlayer = PLAYER_NORMAL;
 			break;
 		case 'D':
-			if (m_StateSprite == MOVE_RIGHT) {
+			if (m_StateMove == MOVE_RIGHT) {
 				m_Player->SetFrame(Vector2(5, m_Player->GetFrame().y));
 				m_Player->GetSurfBoard()->SetFrame(Vector2(5, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateSprite = MOVE_RIGHT_PLUS;
+				m_StateMove = MOVE_RIGHT_PLUS;
 			}
-			else if (m_StateSprite == MOVE_RIGHT_PLUS) {
+			else if (m_StateMove == MOVE_RIGHT_PLUS) {
 				m_Player->SetFrame(Vector2(5, m_Player->GetFrame().y));
 				m_Player->GetSurfBoard()->SetFrame(Vector2(5, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateSprite = MOVE_RIGHT_PLUS;
+				m_StateMove = MOVE_RIGHT_PLUS;
 			}
 			else {
 				m_Player->SetFrame(Vector2(4, m_Player->GetFrame().y));
 				m_Player->GetSurfBoard()->SetFrame(Vector2(4, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateSprite = MOVE_RIGHT;
+				m_StateMove = MOVE_RIGHT;
 			}
 			if (m_StatePlayer == PLAYER_DIE)
 				m_StatePlayer = PLAYER_NORMAL;
@@ -248,8 +249,8 @@ void GSPlay::Update(float deltaTime)
 			RandomSprite();
 			m_TimeBornObj -= 1;
 		}
-		//count += m_ArrObject.back()->GetSpeed() * deltaTime;
-		m_TimeBornObj += deltaTime;
+		m_TimeBornObj += m_ArrObject.back()->GetSpeed() /2 * deltaTime;
+		//m_TimeBornObj += deltaTime;
 
 		//xu ly va cham
 		this->DoCollision();
@@ -259,13 +260,14 @@ void GSPlay::Update(float deltaTime)
 		//m_Player->GetSurfBoard()->Update(deltaTime)
 		m_Player->GetSurfBoard()->Animation(deltaTime);
 		for (auto& obj : m_ArrWater) {
-			obj->Update(deltaTime, m_StateSprite);
+			obj->Update(deltaTime, m_StateMove, m_StateSprite);
 		}
 		for (auto& obj : m_ArrObject) {
-			obj->Update(deltaTime, m_StateSprite);
+			obj->Update(deltaTime, m_StateMove, m_StateSprite);
+			obj->Animation(deltaTime);
 			if (obj->GetEffects() != nullptr)
 			{
-				obj->GetEffects()->Update(deltaTime, m_StateSprite);
+				obj->GetEffects()->Update(deltaTime, m_StateMove, m_StateSprite);
 				obj->GetEffects()->Animation(deltaTime);
 			}
 		}
@@ -320,29 +322,82 @@ void GSPlay::SetNewPostionForBullet()
 void GSPlay::DoCollision()
 {
 	for (auto& obj : m_ArrObject)
-		if (m_Player->CheckCollision(obj) && !m_Player->CheckProtected())
+		if (m_Player->CheckCollision(obj) && !m_Player->IsProtected())
 		{
-			m_StateSprite = FREEZE;
-			m_StatePlayer = PLAYER_DIE;
-			//printf("%d", m_Player->GetHeart());
-			if(m_Player->GetHeart() >= 0 && m_Player->GetHeart() <3)
-				m_ListHeart.at(m_Player->GetHeart())->SetFrame(Vector2(0, 3));
+			if (obj->GetName() == "slowdown")
+			{
+				if(m_StateSprite != SLOWDOWN)
+					m_StateSprite = SLOWDOWN;
+			}
+			else if (obj->GetName() == "whirlpool")
+			{
+				switch (m_StateMove)
+				{
+				case MOVE_LEFT:
+					m_Player->SetFrame(Vector2(4, m_Player->GetFrame().y));
+					m_Player->GetSurfBoard()->SetFrame(Vector2(4, m_Player->GetSurfBoard()->GetFrame().y));
+					m_StateMove = MOVE_RIGHT;
+					break;
+				case MOVE_RIGHT:
+					m_Player->SetFrame(Vector2(2, m_Player->GetFrame().y));
+					m_Player->GetSurfBoard()->SetFrame(Vector2(2, m_Player->GetSurfBoard()->GetFrame().y));
+					m_StateMove = MOVE_LEFT;	
+					break;
+				case MOVE_FORWARD:
+					m_Player->SetFrame(Vector2(2, m_Player->GetFrame().y));
+					m_Player->GetSurfBoard()->SetFrame(Vector2(2, m_Player->GetSurfBoard()->GetFrame().y));
+					m_StateMove = MOVE_LEFT;
+					break;
+				case MOVE_LEFT_PLUS:
+					m_Player->SetFrame(Vector2(4, m_Player->GetFrame().y));
+					m_Player->GetSurfBoard()->SetFrame(Vector2(4, m_Player->GetSurfBoard()->GetFrame().y));
+					m_StateMove = MOVE_RIGHT;
+					break;
+				case MOVE_RIGHT_PLUS:
+					m_Player->SetFrame(Vector2(2, m_Player->GetFrame().y));
+					m_Player->GetSurfBoard()->SetFrame(Vector2(2, m_Player->GetSurfBoard()->GetFrame().y));
+					m_StateMove = MOVE_LEFT;
+					break;
+				case FREEZE:
+					break;
+				default:
+					break;
+				}
+			}
+			else
+			{
+				m_StateSprite = STOP;
+				m_StateMove = FREEZE;
+				m_StatePlayer = PLAYER_DIE;
+				if (m_Player->GetHeart() >= 0 && m_Player->GetHeart() < 3)
+					m_ListHeart.at(m_Player->GetHeart())->SetFrame(Vector2(0, 3));
+			}
 			break;
+		}
+		else
+		{
+			m_StateSprite = NORMAL;
 		}
 	if (m_Player->GetHeart() == 0)
 	{
 		GameOver();
 	}
+	//printf("%f", m_ArrObject.at(0)->GetSpeed());
 }
 
 void GSPlay::RandomSprite()
 {
 	//printf("%d", m_ArrObject.size());
-	srand(time(NULL));
+	//srand(time(NULL));
 	std::vector<DynamicSpriteType> DynamicSpriteType;
 	DynamicSpriteType.push_back(OBJECT64);
 	DynamicSpriteType.push_back(OBJECT32);
 	DynamicSpriteType.push_back(SANDBAR256);
+	DynamicSpriteType.push_back(AMBIENT64);
+	DynamicSpriteType.push_back(SLOWDOWN64);
+	DynamicSpriteType.push_back(SLOWDOWN192);
+	DynamicSpriteType.push_back(WHIRLPOOL);
+
 	int IndexType = rand() % DynamicSpriteType.size();
 
 	auto shader = ResourceManagers::GetInstance()->GetShader("ObjectShader");
@@ -358,7 +413,7 @@ void GSPlay::RandomSprite()
 	switch (DynamicSpriteType.at(IndexType))
 	{
 	case OBJECT64:
-		object = std::make_shared<DynamicSprite>(model, shader, texture);
+		object = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
 		object->SetSize(64, 64);
 		object->SetNumSprite(30);
 		object->SetFrame(Vector2(rand() % 30, 0));
@@ -366,7 +421,7 @@ void GSPlay::RandomSprite()
 
 		////add effect song nuoc
 		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
-		effect = std::make_shared<DynamicSprite>(model, shader, texture);
+		effect = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
 		effect->SetSize(96, 96);
 		effect->Set2DPosition(object->Get2DPosition());
 		effect->SetNumFrame(3);
@@ -377,7 +432,7 @@ void GSPlay::RandomSprite()
 		break;
 	case OBJECT32:
 		texture = ResourceManagers::GetInstance()->GetTexture("objects32");
-		object = std::make_shared<DynamicSprite>(model, shader, texture);
+		object = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
 		object->SetSize(32, 32);
 		object->SetNumSprite(20);
 		object->SetFrame(Vector2(rand() % 8, 0));
@@ -385,7 +440,7 @@ void GSPlay::RandomSprite()
 
 		//add effect song nuoc
 		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
-		effect = std::make_shared<DynamicSprite>(model, shader, texture);
+		effect = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
 		effect->SetSize(96, 96);
 		effect->Set2DPosition((GLfloat)XPos, (GLfloat)YPos - 15);
 		effect->SetNumFrame(3);
@@ -396,11 +451,65 @@ void GSPlay::RandomSprite()
 		break;
 	case SANDBAR256:
 		texture = ResourceManagers::GetInstance()->GetTexture("sandbar256");
-		object = std::make_shared<DynamicSprite>(model, shader, texture);
+		object = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
 		object->SetSize(256, 128);
 		object->SetNumSprite(4);
 		object->SetFrame(Vector2(rand() % 4, 0));
 		object->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
+		object->Init();
+		break;
+	case AMBIENT64:
+		texture = ResourceManagers::GetInstance()->GetTexture("ambient64");
+		object = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		object->SetSize(64, 64);
+		object->SetNumSprite(4);
+		object->SetNumFrame(6);
+		object->SetFrame(Vector2(rand() % object->GetNumSprite(), object->GetNumFrame() - 1));
+		object->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
+
+		//add effect song nuoc
+		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
+		effect = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		effect->SetSize(96, 96);
+		effect->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
+		effect->SetNumFrame(3);
+		effect->SetFrame(Vector2(0, 2));
+		effect->Init();
+		object->SetEffects(effect);
+		object->Init();
+		break;
+	case SLOWDOWN64:
+		texture = ResourceManagers::GetInstance()->GetTexture("slowdown64");
+		object = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		object->SetSize(64, 64);
+		object->SetNumSprite(9);
+		object->SetNumFrame(3);
+		object->SetFrame(Vector2(rand() % object->GetNumSprite(), object->GetNumFrame() - 1));
+		object->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
+		object->SetName("slowdown");
+		object->Init();
+		break;
+	case SLOWDOWN192:
+		texture = ResourceManagers::GetInstance()->GetTexture("slowdown64");
+		object = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		object->SetSize(192, 64);
+		object->SetNumSprite(3);
+		object->SetNumFrame(3);
+		object->SetFrame(Vector2(rand() % object->GetNumSprite(), object->GetNumFrame() - 1));
+		object->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
+		object->SetName("slowdown");
+		object->Init();
+		break;
+	case WHIRLPOOL:
+		texture = ResourceManagers::GetInstance()->GetTexture("effects128");
+		object = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		object->SetSize(128, 128);
+		object->SetNumSprite(6);
+		object->SetNumFrame(3);
+		object->SetFrame(Vector2(rand() % (object->GetNumSprite() - 2) , object->GetNumFrame() - 1));
+		object->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
+		object->SetName("whirlpool");
+		object->Init();
 		break;
 	default:
 		break;

@@ -230,24 +230,28 @@ Vector2 Sprite2D::GetFrame()
 
 void Sprite2D::Animation(GLfloat deltatime)
 {
-	if (time > 1) {
-		if (temp <= m_NumFrame - 1) {
-			m_CurrentFrame.y = m_CurrentFrame.y - 1;
+	if (m_NumFrame > 1)
+	{
+		if (time > 1) {
+			if (m_CurrentFrame.y > 0)
+			{
+				m_CurrentFrame.y = m_CurrentFrame.y - 1;
+				time -= 1;
+			}
+			else
+			{
+				m_CurrentFrame.y = m_NumFrame - 1;
+			}
 		}
-		else if (temp > m_NumFrame - 1) {
-			m_CurrentFrame.y = m_CurrentFrame.y + 1;
-		}
-		temp = temp % (2 * m_NumFrame - 2) + 1;
-		time -= 1;
+		time = time + 3 * deltatime;
 	}
-	time = time + 3*deltatime;
 }
 
 
 bool Sprite2D::CheckCollision(std::shared_ptr<Sprite2D> object)
 {
-	bool collisionX = m_Vec2DPos.x + m_iWidth / 2 >= object->m_Vec2DPos.x - object->m_iWidth/2 && object->m_Vec2DPos.x + object->m_iWidth / 2 >= m_Vec2DPos.x - m_iWidth/2;
-	bool collisionY = m_Vec2DPos.y + m_iHeight / 2 - m_iHeight / 4 >= object->m_Vec2DPos.y - m_iHeight/2 + m_iHeight / 4 && object->m_Vec2DPos.y + object->m_iHeight / 2 - m_iHeight / 4 >= m_Vec2DPos.y - m_iHeight/2 + m_iHeight / 4;
+	bool collisionX = m_Vec2DPos.x + m_iWidth / 4 >= object->m_Vec2DPos.x - object->m_iWidth / 4 && object->m_Vec2DPos.x + object->m_iWidth / 4 >= m_Vec2DPos.x - m_iWidth / 4;
+	bool collisionY = m_Vec2DPos.y + m_iHeight / 4 >= object->m_Vec2DPos.y - m_iHeight / 4 && object->m_Vec2DPos.y + object->m_iHeight / 4 >= m_Vec2DPos.y - m_iHeight/4;
 	return collisionX && collisionY;
 }
 
