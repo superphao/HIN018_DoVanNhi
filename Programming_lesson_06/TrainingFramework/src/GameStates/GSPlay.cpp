@@ -26,13 +26,14 @@ GSPlay::~GSPlay()
 void GSPlay::Init()
 {
 	glClearColor(56.0f / 255.0f, 194.0f / 255.0f, 238.0f / 255.0f, 0.0f);
+	//glClearColor(46.0f / 255.0f, 195.0f / 255.0f, 208.0f / 255.0f, 1.0f);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	m_StateMove = FREEZE;
 	m_SttGamePlay = GAME_RUNNING;
 	m_TimeBornObj = 0;
-	m_TextScore = 0;
+	m_score = 0;
 	m_SpeedMove = 5;
 	m_isPause = false;
 
@@ -50,6 +51,7 @@ void GSPlay::Init()
 	m_Player->SetNumSprite(13);
 	m_Player->SetFrame(Vector2(0, DefautPlayer));
 	m_Player->Init();
+	m_Player->SetName("player");
 
 	//surfboard
 	texture = ResourceManagers::GetInstance()->GetTexture("SurfBoard64");
@@ -102,29 +104,114 @@ void GSPlay::Init()
 	for (int i = 0; i < 3; ++i)
 	{
 		texture = ResourceManagers::GetInstance()->GetTexture("interface24");
-		std::shared_ptr<Sprite2D> m_Heart = std::make_shared<Sprite2D>(model, shader, texture);
-		m_Heart->SetSize(24, 24);
-		m_Heart->Set2DPosition((GLfloat)screenWidth / 2 - 170 + i * 24, 24);
-		m_Heart->SetNumFrame(4);
-		m_Heart->SetNumSprite(2);
-		m_Heart->SetFrame(Vector2(1, 3));
-		m_Heart->Init();
-		m_ListHeart.push_back(m_Heart);
+		std::shared_ptr<Sprite2D> heart = std::make_shared<Sprite2D>(model, shader, texture);
+		heart->SetSize(24, 24);
+		heart->Set2DPosition((GLfloat)screenWidth / 2 - 100 + i * 24, 24);
+		heart->SetNumFrame(4);
+		heart->SetNumSprite(2);
+		heart->SetFrame(Vector2(1, 3));
+		heart->Init();
+		m_ListHeart.push_back(heart);
 	}
+
+	//energy
+	for (int i = 0; i < 3; ++i)
+	{
+		texture = ResourceManagers::GetInstance()->GetTexture("interface24");
+		std::shared_ptr<Sprite2D> energy = std::make_shared<Sprite2D>(model, shader, texture);
+		energy->SetSize(24, 24);
+		energy->Set2DPosition((GLfloat)screenWidth / 2 + 50 + i * 24, 24);
+		energy->SetNumFrame(4);
+		energy->SetNumSprite(2);
+		energy->SetFrame(Vector2(0, 2));
+		energy->Init();
+		m_ListEnergy.push_back(energy);
+	}
+
+	//menu setting
+	texture = ResourceManagers::GetInstance()->GetTexture("settings");
+	m_buttonOption = std::make_shared<GameButton>(model, shader, texture);
+	m_buttonOption->Set2DPosition((GLfloat)screenWidth - 20, 20);
+	m_buttonOption->SetSize(32, 32);
+	m_buttonOption->SetOnClick([]() {
+		//GameStateMachine::GetInstance()->ChangeState(StateTypes::STATE_Option);
+		std::dynamic_pointer_cast<GSPlay>(GameStateMachine::GetInstance()->CurrentState())->GameOption();
+		});
+
+	//button resume
+	texture = ResourceManagers::GetInstance()->GetTexture("button_resume");
+	std::shared_ptr<GameButton> button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition(screenWidth / 2, 200);
+	button->SetSize(200, 70);
+	button->SetOnClick([]() {
+		std::dynamic_pointer_cast<GSPlay>(GameStateMachine::GetInstance()->CurrentState())->Resume();
+		});
+	m_listButton.push_back(button);
+
+	//button restart
+	texture = ResourceManagers::GetInstance()->GetTexture("button_restart");
+	button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition(screenWidth / 2, 300);
+	button->SetSize(200, 70);
+	button->SetOnClick([]() {
+		std::dynamic_pointer_cast<GSPlay>(GameStateMachine::GetInstance()->CurrentState())->ReStart();
+		});
+	m_listButton.push_back(button);
+
+
+	//button quit
+	texture = ResourceManagers::GetInstance()->GetTexture("button_quit");
+	button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition(screenWidth / 2, 400);
+	button->SetSize(200, 70);
+	button->SetOnClick([]() {
+		GameStateMachine::GetInstance()->PopState();
+		GameStateMachine::GetInstance()->ChangeState(STATE_Menu);
+		});
+	m_listButton.push_back(button);
+
+	//background option
+	shader = ResourceManagers::GetInstance()->GetShader("ColorShader");
+	m_BackgroundOption = std::make_shared<Sprite2D>(model, shader, Vector4(46.0f / 255.0f, 195.0f / 255.0f, 208.0f / 255.0f, 0.4f));
+	m_BackgroundOption->Set2DPosition((GLfloat)screenWidth / 2, (GLfloat)screenHeight / 2);
+	m_BackgroundOption->SetSize(screenWidth, screenHeight);
+	m_BackgroundOption->Init();
 
 	//score
 	shader = ResourceManagers::GetInstance()->GetShader("TextShader");
 	std::shared_ptr<Font> font = ResourceManagers::GetInstance()->GetFont("arialbd");
-	m_score = std::make_shared< Text>(shader, font, "score: " , TEXT_COLOR::BLACK, 0.7);
-	m_score->Set2DPosition(Vector2((GLfloat) screenWidth/2 - 50, 25));
+	m_Text_score = std::make_shared< Text>(shader, font, "0m" , TEXT_COLOR::BLACK, 0.7);
+	m_Text_score->Set2DPosition(Vector2((GLfloat) screenWidth/2 - 10, 30));
 
 	//text state game play
+	font = ResourceManagers::GetInstance()->GetFont("arialbd");
 	m_TextSttGame = std::make_shared< Text>(shader, font, "SURF PAUSED", TEXT_COLOR::BLACK, 1.5);
 	m_TextSttGame->Set2DPosition(Vector2((GLfloat)screenWidth / 2 - 110, 100));
 
 	//text decription state game
+	font = ResourceManagers::GetInstance()->GetFont("arial");
 	m_DesciptSttGame = std::make_shared< Text>(shader, font, "SPACEBAR to resume surfing", TEXT_COLOR::BLACK, 0.8);
-	m_DesciptSttGame->Set2DPosition(Vector2((GLfloat)screenWidth / 2 - 120, 140));
+	m_DesciptSttGame->Set2DPosition(Vector2((GLfloat)screenWidth / 2 - 110, 140));
+
+	//open file high score
+	//open file highscore
+	std::ifstream readFile("..\\Data\\Highscore\\Highscore.txt", std::ios::binary);
+	if (!readFile.is_open())
+	{
+		LOGE("ERROR Highscore.txt \n");
+		return;
+	}
+	else
+	{
+		LOGI("Load File:Highscore.txt\t\t");
+
+		while (!readFile.eof())
+		{
+			readFile >> m_highscore;
+		}
+		readFile.close();
+	}
+
 }
 
 void GSPlay::Exit()
@@ -151,12 +238,33 @@ void GSPlay::GameOver()
 	m_TextSttGame->setText("SURF AGAIN");
 	m_DesciptSttGame->setText("SPACEBAR to surf again");
 	m_isPause = true;
+	if (m_score > m_highscore)
+	{
+		std::ofstream writeFile("..\\Data\\Highscore\\Highscore.txt", std::ios::binary);
+		if (!writeFile.is_open())
+		{
+			LOGE("ERROR Highscore.txt \n");
+			return;
+		}
+		else
+		{
+			LOGI("Load File:Highscore.txt\t\t");
+			writeFile << (GLint) m_score;
+			writeFile.close();
+		}
+	}
 }
 
 void GSPlay::ReStart()
 {
 	GameStateMachine::GetInstance()->PopState();
 	GameStateMachine::GetInstance()->ChangeState(StateTypes::STATE_Play);
+}
+
+void GSPlay::GameOption()
+{
+	m_SttGamePlay = GAME_OPTION;
+	m_isPause = true;
 }
 
 
@@ -227,6 +335,16 @@ void GSPlay::HandleKeyEvents(int key, bool bIsPressed)
 			else if (m_SttGamePlay == GAME_OVER)
 				ReStart();
 			break;
+		case VK_ESCAPE:
+			if (m_SttGamePlay == GAME_RUNNING)
+			{
+				GameOption();
+			}
+			else if (m_SttGamePlay == GAME_OPTION)
+			{
+				Resume();
+			}
+			break;
 		default:
 			if (m_SttGamePlay == GAME_RUNNING)
 				Pause();
@@ -238,11 +356,21 @@ void GSPlay::HandleKeyEvents(int key, bool bIsPressed)
 
 void GSPlay::HandleTouchEvents(int x, int y, bool bIsPressed)
 {
+	if (bIsPressed)
+	{
+		m_buttonOption->HandleTouchEvents(x, y, bIsPressed);
+		if(m_SttGamePlay == GAME_OPTION)
+			for (auto it : m_listButton)
+			{
+				(it)->HandleTouchEvents(x, y, bIsPressed);
+				if ((it)->IsHandle()) break;
+			}
+	}
 }
 
 void GSPlay::Update(float deltaTime)
 {
-	if (!m_isPause)
+	if (!m_isPause && deltaTime > 0)
 	{
 		// sinh object moi
 		if (m_TimeBornObj > 1) {
@@ -272,6 +400,12 @@ void GSPlay::Update(float deltaTime)
 			}
 		}
 
+		//xet trang thai di chuyen neu ma khong dung yen thi set speed cua vat thanh binh thuong
+		if (m_StateMove != FREEZE)
+		{
+			m_StateSprite = NORMAL;
+		}
+
 		//xoa object da di ra ngoai man hinh
 		for (auto& obj : m_ArrObject) {
 			if (obj->Get2DPosition().y < -(GLfloat)screenHeight / 4)
@@ -282,10 +416,14 @@ void GSPlay::Update(float deltaTime)
 				break;
 			}
 		}
-		m_TextScore += m_ArrObject.back()->GetSpeed() * deltaTime;
-		m_score->setText("Score: " + std::to_string((GLint) m_TextScore) + "m");
+		m_score += m_ArrObject.back()->GetSpeed() * deltaTime;
+		m_Text_score->setText(std::to_string((GLint) m_score) + "m");
 	}
 	
+	for (auto& obj : m_listButton)
+	{
+		obj->Update(deltaTime);
+	}
 }
 
 void GSPlay::Draw()
@@ -296,7 +434,10 @@ void GSPlay::Draw()
 	for (auto& obj : m_ListHeart) {
 		obj->Draw();
 	}
-	//m_Player->GetSurfBoard()->Draw();
+	for (auto& obj : m_ListEnergy) {
+		obj->Draw();
+	}
+
 	m_Player->GetSurfBoard()->Draw();
 	m_Player->Draw();
 	for (auto& obj : m_ArrObject) {
@@ -307,11 +448,23 @@ void GSPlay::Draw()
 		}
 	}
 	//m_BackGround->Draw();
-	m_score->Draw();
+	m_Text_score->Draw();
 	if (m_SttGamePlay == GAME_PAUSE || m_SttGamePlay == GAME_OVER)
 	{
+		m_BackgroundOption->Draw();
 		m_TextSttGame->Draw();
 		m_DesciptSttGame->Draw();
+	}
+
+	m_buttonOption->Draw();
+
+	if (m_SttGamePlay == GAME_OPTION)
+	{
+		m_BackgroundOption->Draw();
+		for (auto& obj : m_listButton)
+		{
+			obj->Draw();
+		}
 	}
 }
 
@@ -326,11 +479,16 @@ void GSPlay::DoCollision()
 		{
 			if (obj->GetName() == "slowdown")
 			{
-				if(m_StateSprite != SLOWDOWN)
+				//if(m_StateSprite != SLOWDOWN)
 					m_StateSprite = SLOWDOWN;
+					if (m_Player->Get2DPosition().y > obj->Get2DPosition().y)
+					{
+						m_StateSprite = NORMAL;
+					}
 			}
 			else if (obj->GetName() == "whirlpool")
 			{
+				obj->SetName("whirlpool_collided");
 				switch (m_StateMove)
 				{
 				case MOVE_LEFT:
@@ -364,19 +522,14 @@ void GSPlay::DoCollision()
 					break;
 				}
 			}
-			else
+			else if(obj->GetName() == "harmful")
 			{
-				m_StateSprite = STOP;
 				m_StateMove = FREEZE;
 				m_StatePlayer = PLAYER_DIE;
 				if (m_Player->GetHeart() >= 0 && m_Player->GetHeart() < 3)
 					m_ListHeart.at(m_Player->GetHeart())->SetFrame(Vector2(0, 3));
 			}
 			break;
-		}
-		else
-		{
-			m_StateSprite = NORMAL;
 		}
 	if (m_Player->GetHeart() == 0)
 	{
@@ -407,7 +560,7 @@ void GSPlay::RandomSprite()
 	std::shared_ptr<DynamicSprite> object;
 
 	//set vi tri
-	GLint XPos = rand() % 640;
+	GLint XPos = (rand() % (2*screenWidth)) - screenWidth/2;
 	GLint YPos = rand() % (screenHeight / 2) + screenHeight;
 
 	switch (DynamicSpriteType.at(IndexType))
@@ -418,6 +571,7 @@ void GSPlay::RandomSprite()
 		object->SetNumSprite(30);
 		object->SetFrame(Vector2(rand() % 30, 0));
 		object->Set2DPosition((GLfloat) XPos, (GLfloat) YPos);
+		object->SetName("harmful");
 
 		////add effect song nuoc
 		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
@@ -437,6 +591,7 @@ void GSPlay::RandomSprite()
 		object->SetNumSprite(20);
 		object->SetFrame(Vector2(rand() % 8, 0));
 		object->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
+		object->SetName("harmful");
 
 		//add effect song nuoc
 		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
@@ -457,6 +612,7 @@ void GSPlay::RandomSprite()
 		object->SetFrame(Vector2(rand() % 4, 0));
 		object->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
 		object->Init();
+		object->SetName("harmful");
 		break;
 	case AMBIENT64:
 		texture = ResourceManagers::GetInstance()->GetTexture("ambient64");
@@ -466,6 +622,7 @@ void GSPlay::RandomSprite()
 		object->SetNumFrame(6);
 		object->SetFrame(Vector2(rand() % object->GetNumSprite(), object->GetNumFrame() - 1));
 		object->Set2DPosition((GLfloat)XPos, (GLfloat)YPos);
+		object->SetName("harmful");
 
 		//add effect song nuoc
 		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");

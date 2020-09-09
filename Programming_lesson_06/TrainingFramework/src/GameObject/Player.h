@@ -23,10 +23,9 @@ public:
     GLint GetHeart();
 
 private:
-    GLint tmp_Player;
-    GLfloat time;
+    GLint m_NextFrame;
+    GLfloat m_time;
     GLint m_Heart;
-    std::vector<std::shared_ptr<Sprite2D>> m_ListHeart;
     std::shared_ptr<Sprite2D> m_SurfBoard;
     GLfloat m_TimeDie;
     GLfloat m_TimeProtected;

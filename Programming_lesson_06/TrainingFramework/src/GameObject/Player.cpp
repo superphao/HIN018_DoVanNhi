@@ -3,8 +3,8 @@
 Player::Player(std::shared_ptr<Models> model, std::shared_ptr<Shaders> shader, std::shared_ptr<Texture> texture)
 	: Sprite2D(model, shader, texture)
 {
-	time = 0;
-	tmp_Player = 3;
+	m_time = 0;
+	m_NextFrame = 1;
 	m_Heart = 3;
 	m_SurfBoard = nullptr;
 	m_TimeDie = 2;
@@ -19,21 +19,21 @@ Player::~Player()
 
 void Player::MenuPlayerAnimation(GLfloat deltaTime)
 {
-	if (time > 1) {
-		if (tmp_Player <= m_NumSprite - 9) {
-			SetFrame(Vector2(m_CurrentFrame.x - 1, m_CurrentFrame.y));
-			if(m_SurfBoard != nullptr)
-				m_SurfBoard->SetFrame(Vector2(m_SurfBoard->GetFrame().x - 1, m_SurfBoard->GetFrame().y));
+	if (m_time > 1) {
+		if (m_CurrentFrame.x == 5)
+		{
+			m_NextFrame = -1;
 		}
-		else if (tmp_Player > m_NumSprite - 9) {
-			SetFrame(Vector2(m_CurrentFrame.x + 1, m_CurrentFrame.y));
-			if (m_SurfBoard != nullptr)
-				m_SurfBoard->SetFrame(Vector2(m_SurfBoard->GetFrame().x + 1, m_SurfBoard->GetFrame().y));
+		else if (m_CurrentFrame.x == 1)
+		{
+			m_NextFrame = 1;
 		}
-		tmp_Player = tmp_Player % (2 * m_NumSprite - 16 - 2) + 1;
-		time -= 1;
+		SetFrame(Vector2(m_CurrentFrame.x + m_NextFrame, m_CurrentFrame.y));
+		if (m_SurfBoard != nullptr)
+			m_SurfBoard->SetFrame(Vector2(m_SurfBoard->GetFrame().x + m_NextFrame, m_SurfBoard->GetFrame().y));
+		m_time -= 1;
 	}
-	time = time + 4 * deltaTime;
+	m_time = m_time + 4 * deltaTime;
 }
 
 void Player::SetSurfBoard(std::shared_ptr<Sprite2D> surfBoard)

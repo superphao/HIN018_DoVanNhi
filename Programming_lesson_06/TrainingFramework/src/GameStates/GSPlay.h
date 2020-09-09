@@ -1,5 +1,6 @@
 #pragma once
 #include "gamestatebase.h"
+#include "GameButton.h"
 
 class Sprite2D;
 class Sprite3D;
@@ -10,6 +11,7 @@ enum StateGamePlay
 	GAME_PAUSE,
 	GAME_OVER,
 	GAME_RUNNING,
+	GAME_OPTION,
 };
 
 class GSPlay :
@@ -26,6 +28,7 @@ public:
 	void Resume();
 	void GameOver();
 	void ReStart();
+	void GameOption();
 
 	void HandleEvents();
 	void HandleKeyEvents(int key, bool bIsPressed);
@@ -41,8 +44,7 @@ public:
 
 private:
 
-	std::shared_ptr<Sprite2D> m_BackGround;
-	std::shared_ptr<Text> m_score;
+	std::shared_ptr<Text> m_Text_score;
 	std::shared_ptr<Player>	m_Player;
 	std::vector<std::shared_ptr<DynamicSprite>>	m_ArrWater;
 	std::vector<std::shared_ptr<DynamicSprite>>	m_ArrObject;
@@ -51,11 +53,16 @@ private:
 	StateGamePlay m_SttGamePlay;
 	StateSprite m_StateSprite;
 	std::vector<std::shared_ptr<Sprite2D>> m_ListHeart;
+	std::vector<std::shared_ptr<Sprite2D>> m_ListEnergy;
 	GLboolean m_isPause;
 	std::shared_ptr<Text> m_TextSttGame;
 	std::shared_ptr<Text> m_DesciptSttGame;
 	GLfloat m_TimeBornObj;
-	GLfloat m_TextScore;
+	GLfloat m_score;
 	GLfloat m_SpeedMove;
+	std::vector<std::shared_ptr<GameButton>> m_listButton;
+	std::shared_ptr<Sprite2D> m_BackgroundOption;
+	std::shared_ptr<GameButton> m_buttonOption;
+	GLint m_highscore;
 };
 

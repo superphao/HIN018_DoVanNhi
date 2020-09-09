@@ -250,8 +250,38 @@ void Sprite2D::Animation(GLfloat deltatime)
 
 bool Sprite2D::CheckCollision(std::shared_ptr<Sprite2D> object)
 {
-	bool collisionX = m_Vec2DPos.x + m_iWidth / 4 >= object->m_Vec2DPos.x - object->m_iWidth / 4 && object->m_Vec2DPos.x + object->m_iWidth / 4 >= m_Vec2DPos.x - m_iWidth / 4;
-	bool collisionY = m_Vec2DPos.y + m_iHeight / 4 >= object->m_Vec2DPos.y - m_iHeight / 4 && object->m_Vec2DPos.y + object->m_iHeight / 4 >= m_Vec2DPos.y - m_iHeight/4;
+	Vector2 object_coverage(object->m_iWidth / 2, object->m_iHeight / 2);
+	Vector2 this_coverage(object->m_iWidth / 2, object->m_iHeight / 2);
+
+	if (this->GetName() == "player")
+	{
+		this_coverage.x = m_iWidth / 8;
+		this_coverage.y = m_iHeight / 4;
+	}
+	else if (this->GetName() == "harmful")
+	{
+		this_coverage.x = m_iWidth / 2 - (object->m_iWidth / 9);
+		this_coverage.y = m_iHeight / 9;
+	}
+	else if (this->GetName() == "whirlpool")
+	{
+		this_coverage.x = m_iWidth / 4;
+		this_coverage.y = m_iHeight / 4;
+	}
+
+	if (object->GetName() == "harmful")
+	{
+		object_coverage.x = object->m_iWidth / 2 - (object->m_iWidth / 9);
+		object_coverage.y = object->m_iHeight / 9 ;
+	}
+	else if (object->GetName() == "whirlpool")
+	{
+		object_coverage.x = object->m_iWidth / 4;
+		object_coverage.y = object->m_iHeight / 4;
+	}
+
+	bool collisionX = m_Vec2DPos.x + this_coverage.x >= object->m_Vec2DPos.x - object_coverage.x && object->m_Vec2DPos.x + object_coverage.x >= m_Vec2DPos.x - this_coverage.x;
+	bool collisionY = m_Vec2DPos.y + this_coverage.y >= object->m_Vec2DPos.y - object_coverage.y && object->m_Vec2DPos.y + object_coverage.y >= m_Vec2DPos.y - this_coverage.y;
 	return collisionX && collisionY;
 }
 

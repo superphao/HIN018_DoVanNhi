@@ -2,6 +2,11 @@
 #include "Shaders.h"
 #include "Application.h"
 #include "utilities.h" 
+#include "soloud.h"
+#include "soloud_wav.h"
+#include "soloud_speech.h"
+#include "soloud_file.h"
+#include "soloud_thread.h"
 
 GLint screenWidth = 640;
 GLint screenHeight = 720;
@@ -42,7 +47,44 @@ void CleanUp()
 
 GLint _tmain(GLint argc, _TCHAR* argv[])
 {
+	//test mp3
+	//SoLoud::Soloud soloud;  // SoLoud engine core
+	//SoLoud::Wav wav;
 
+	//soloud.init();
+
+	//FILE* p = fopen("Keep_it_Mello.mp3", "r");
+	//if (!p)
+	//{
+	//	return -1;
+	//}
+	//SoLoud::DiskFile* f = new SoLoud::DiskFile(p);
+	//wav.loadFile(f);
+
+	//soloud.play(wav);
+	// Define a couple of variables
+	SoLoud::Soloud soloud;  // SoLoud engine core
+	SoLoud::Speech speech;  // A sound source (speech, in this case)
+
+	// Configure sound source
+	speech.setText("1 2 3   1 2 3   Hello world. Welcome to So-Loud.");
+
+	// initialize SoLoud.
+	soloud.init();
+
+	// Play the sound source (we could do this several times if we wanted)
+	soloud.play(speech);
+
+	// Wait until sounds have finished
+	while (soloud.getActiveVoiceCount() > 0)
+	{
+		// Still going, sleep for a bit
+		SoLoud::Thread::sleep(100);
+	}
+
+	// Clean up SoLoud
+	soloud.deinit();
+	//end test
 	ESContext esContext;
 	esInitContext(&esContext);
 	esCreateWindow(&esContext, "LET'S SURF", screenWidth, screenHeight, ES_WINDOW_RGB | ES_WINDOW_DEPTH);
@@ -59,7 +101,7 @@ GLint _tmain(GLint argc, _TCHAR* argv[])
 	CleanUp();
 
 	//identifying memory leaks
-	MemoryDump();
+	//MemoryDump();
 	//printf("Press any key...\n");
 	//_getch();
 

@@ -7,6 +7,7 @@ DynamicSprite::DynamicSprite(std::shared_ptr<Models> model, std::shared_ptr<Shad
 {
 	m_Effects = nullptr;
 	m_Speed = 0;
+	m_MaxSpeed = 0;
 }
 
 DynamicSprite::DynamicSprite(std::shared_ptr<Models> model, std::shared_ptr<Shaders> shader, std::shared_ptr<Texture> texture, GLfloat speed)
@@ -14,6 +15,7 @@ DynamicSprite::DynamicSprite(std::shared_ptr<Models> model, std::shared_ptr<Shad
 {
 	m_Effects = nullptr;
 	m_Speed = speed;
+	m_MaxSpeed = speed;
 }
 
 
@@ -26,10 +28,10 @@ void DynamicSprite::Update(GLfloat deltaTime, StateMoveSprite stt_move, StateSpr
 	switch (stt_sprite)
 	{
 	case SLOWDOWN:
-		m_Speed = 2;
+		m_Speed = m_MaxSpeed - 3;
 		break;
 	case NORMAL:
-		m_Speed = 5;
+		m_Speed = m_MaxSpeed;
 		break;
 	case STOP:
 		m_Speed = 0;
@@ -56,6 +58,7 @@ void DynamicSprite::Update(GLfloat deltaTime, StateMoveSprite stt_move, StateSpr
 		Set2DPosition(m_Vec2DPos.x + 4 * 60 * deltaTime, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
 		break;
 	case FREEZE:
+		m_Speed = 0;
 		Set2DPosition(m_Vec2DPos.x, m_Vec2DPos.y);
 		break;
 	default:

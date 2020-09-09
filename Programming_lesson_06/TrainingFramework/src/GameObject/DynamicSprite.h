@@ -45,5 +45,6 @@ public:
 protected:
     std::shared_ptr<DynamicSprite> m_Effects;
     GLfloat m_Speed;
+    GLfloat m_MaxSpeed;
 };
 

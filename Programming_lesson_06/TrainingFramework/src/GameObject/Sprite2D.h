@@ -6,13 +6,13 @@ class Sprite2D : public BaseObject
 private:
 	std::string		m_Text;
 	void			CaculateWorldMatrix();
+	GLint			temp;
+	GLfloat			time;
 	
 protected:
 	Vector2			m_Vec2DPos;
 	GLint			m_iHeight;
 	GLint			m_iWidth;
-	GLint			temp;
-	GLfloat			time;
 	Vector2         m_CurrentFrame;
 	GLint			m_NumSprite;
 	GLint			m_NumFrame;

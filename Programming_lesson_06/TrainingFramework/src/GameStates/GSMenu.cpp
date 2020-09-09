@@ -1,5 +1,7 @@
 #include "GSMenu.h"
 #include "GSPlay.h"
+#include <fstream>
+#include "GameConfig.h"
 extern int screenWidth; //need get on Graphic engine
 extern int screenHeight; //need get on Graphic engine
 
@@ -21,6 +23,8 @@ void GSMenu::Init()
 	glClearColor(56.0f / 255.0f, 194.0f / 255.0f, 238.0f / 255.0f, 0.0f);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	isUpHighscore = false;
 
 	//water
 	auto shader = ResourceManagers::GetInstance()->GetShader("TextureShader");
@@ -71,34 +75,34 @@ void GSMenu::Init()
 		i++;
 	}
 
-	//auto model = ResourceManagers::GetInstance()->GetModel("Sprite2D");
-	//auto texture = ResourceManagers::GetInstance()->GetTexture("bg_main_menu");
+	//heart
+	for (int i = 0; i < 3; ++i)
+	{
+		texture = ResourceManagers::GetInstance()->GetTexture("interface24");
+		std::shared_ptr<Sprite2D> heart = std::make_shared<Sprite2D>(model, shader, texture);
+		heart->SetSize(24, 24);
+		heart->Set2DPosition((GLfloat)screenWidth / 2 - 100 + i * 24, 24);
+		heart->SetNumFrame(4);
+		heart->SetNumSprite(2);
+		heart->SetFrame(Vector2(1, 3));
+		heart->Init();
+		m_ListHeart.push_back(heart);
+	}
 
-	////BackGround
-	//auto shader = ResourceManagers::GetInstance()->GetShader("TextureShader");
-	//m_BackGround = std::make_shared<Sprite2D>(model, shader, texture);
-	//m_BackGround->Set2DPosition(screenWidth / 2, screenHeight / 2);
-	//m_BackGround->SetSize(screenWidth, screenHeight);
+	//energy
+	for (int i = 0; i < 3; ++i)
+	{
+		texture = ResourceManagers::GetInstance()->GetTexture("interface24");
+		std::shared_ptr<Sprite2D> energy = std::make_shared<Sprite2D>(model, shader, texture);
+		energy->SetSize(24, 24);
+		energy->Set2DPosition((GLfloat)screenWidth / 2 + 80 + i * 24, 24);
+		energy->SetNumFrame(4);
+		energy->SetNumSprite(2);
+		energy->SetFrame(Vector2(1, 2));
+		energy->Init();
+		m_ListEnergy.push_back(energy);
+	}
 
-	////play button
-	//texture = ResourceManagers::GetInstance()->GetTexture("button_play");
-	//std::shared_ptr<GameButton> button = std::make_shared<GameButton>(model, shader, texture);
-	//button->Set2DPosition(screenWidth / 2, 200);
-	//button->SetSize(200, 50);
-	//button->SetOnClick([]() {
-	//	GameStateMachine::GetInstance()->ChangeState(StateTypes::STATE_Play);
-	//	});
-	//m_listButton.push_back(button);
-
-	////exit button
-	//texture = ResourceManagers::GetInstance()->GetTexture("button_quit");
-	//button = std::make_shared<GameButton>(model, shader, texture);
-	//button->Set2DPosition(screenWidth / 2, 300);
-	//button->SetSize(200, 50);
-	//button->SetOnClick([]() {
-	//	exit(0);
-	//	});
-	//m_listButton.push_back(button);
 
 	//arow left
 	texture = ResourceManagers::GetInstance()->GetTexture("arrow");
@@ -108,7 +112,7 @@ void GSMenu::Init()
 	button->SetNumSprite(2);
 	button->SetFrame(Vector2(0, 0));
 	button->SetOnClick([]() {
-
+		std::dynamic_pointer_cast<GSMenu>(GameStateMachine::GetInstance()->CurrentState())->ChangePlayerLeft();
 		});
 	m_listButton.push_back(button);
 
@@ -119,20 +123,60 @@ void GSMenu::Init()
 	button->SetNumSprite(2);
 	button->SetFrame(Vector2(1, 0));
 	button->SetOnClick([]() {
-
+		std::dynamic_pointer_cast<GSMenu>(GameStateMachine::GetInstance()->CurrentState())->ChangePlayerRight();
 		});
 	m_listButton.push_back(button);
+
+	//menu setting
+	texture = ResourceManagers::GetInstance()->GetTexture("settings");
+	button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition((GLfloat) screenWidth - 20, 20);
+	button->SetSize(32, 32);
+	button->SetOnClick([]() {
+		GameStateMachine::GetInstance()->ChangeState(StateTypes::STATE_Option);
+		});
+	m_listButton.push_back(button);
+
+	//crown
+	texture = ResourceManagers::GetInstance()->GetTexture("crown");
+	m_crown = std::make_shared<Sprite2D>(model, shader, texture);
+	m_crown->Set2DPosition((GLfloat)screenWidth / 2 - 10, 20);
+	m_crown->SetSize(16, 16);
 
 	////text game title
 	shader = ResourceManagers::GetInstance()->GetShader("TextShader");
 	std::shared_ptr<Font> font = ResourceManagers::GetInstance()->GetFont("arialbd");
 	m_Text_gameName = std::make_shared< Text>(shader, font, "LET'S SURF", TEXT_COLOR::BLACK, 1.5);
-	m_Text_gameName->Set2DPosition(Vector2(screenWidth / 2 - 110, 120));
+	m_Text_gameName->Set2DPosition(Vector2(screenWidth / 2 - 100, 100));
 
 	//text description
+	font = ResourceManagers::GetInstance()->GetFont("arial");
 	std::string gameDecription = "Use A D to select a surfer and SPACEBAR to surfing";
 	m_Text_gameDecription = std::make_shared< Text>(shader, font, gameDecription, TEXT_COLOR::BLACK, 1.0);
-	m_Text_gameDecription->Set2DPosition(Vector2(screenWidth / 2 - 300, 170));
+	m_Text_gameDecription->Set2DPosition(Vector2(screenWidth / 2 - 280, 150));
+
+	//open file highscore
+	std::ifstream readFile("..\\Data\\Highscore\\Highscore.txt", std::ios::binary);
+	if (!readFile.is_open())
+	{
+		LOGE("ERROR Highscore.txt \n");
+		return;
+	}
+	else
+	{
+		LOGI("Load File:Highscore.txt\t\t");
+
+		while (!readFile.eof())
+		{
+			readFile >> m_highscore;
+		}
+		readFile.close();
+	}
+
+	//text hight score
+	font = ResourceManagers::GetInstance()->GetFont("arialbd");
+	m_Text_score = std::make_shared< Text>(shader, font, std::to_string(m_highscore) + "m", TEXT_COLOR::BLACK, 0.7);
+	m_Text_score->Set2DPosition(Vector2((GLfloat)screenWidth / 2, 30));
 }
 
 void GSMenu::Exit()
@@ -172,20 +216,14 @@ void GSMenu::HandleKeyEvents(int key, bool bIsPressed)
 					break;
 				}
 			}
-			//printf("%d", DefautPlayer);
+			isUpHighscore = true;
 			GameStateMachine::GetInstance()->ChangeState(StateTypes::STATE_Play);
 			break;
 		case 'D':
-			if (m_ListPlayer.back()->Get2DPosition().x > GLfloat(screenWidth) / 2)
-			{
-				ChangePlayerRight();
-			}
+			ChangePlayerRight();
 			break;
 		case 'A':
-			if (m_ListPlayer.front()->Get2DPosition().x < GLfloat(screenWidth) / 2)
-			{
-				ChangePlayerLeft();
-			}
+			ChangePlayerLeft();
 			break;
 		default:
 			break;
@@ -196,11 +234,14 @@ void GSMenu::HandleKeyEvents(int key, bool bIsPressed)
 
 void GSMenu::HandleTouchEvents(int x, int y, bool bIsPressed)
 {
-	/*for (auto it : m_listButton)
+	if (bIsPressed)
 	{
-		(it)->HandleTouchEvents(x, y, bIsPressed);
-		if ((it)->IsHandle()) break;
-	}*/
+		for (auto it : m_listButton)
+		{
+			(it)->HandleTouchEvents(x, y, bIsPressed);
+			if ((it)->IsHandle()) break;
+		}
+	}
 }
 
 void GSMenu::Update(float deltaTime)
@@ -216,14 +257,34 @@ void GSMenu::Update(float deltaTime)
 		{
 			obj->MenuPlayerAnimation(deltaTime);
 		}
-		/*else 
-			obj->SetFrame(Vector2((GLfloat)3 / obj->GetNumSprite(), obj->GetXYShiftPosition().y);*/
 	}
 	//m_BackGround->Update(deltaTime);
-	/*for (auto it : m_listButton)
+	for (auto it : m_listButton)
 	{
 		it->Update(deltaTime);
-	}*/
+	}
+
+	//update highscore
+	if (isUpHighscore)
+	{
+		std::ifstream readFile("..\\Data\\Highscore\\Highscore.txt", std::ios::binary);
+		if (!readFile.is_open())
+		{
+			LOGE("ERROR Highscore.txt \n");
+			return;
+		}
+		else
+		{
+			LOGI("Load File:Highscore.txt\t\t");
+
+			while (!readFile.eof())
+			{
+				readFile >> m_highscore;
+			}
+			readFile.close();
+		}
+		isUpHighscore = false;
+	}
 }
 
 void GSMenu::Draw()
@@ -232,37 +293,51 @@ void GSMenu::Draw()
 	{
 		obj->Draw();
 	}
-	//for (auto& obj : m_ListSurfBoard)
-	//	obj->Draw();
+	for (auto& obj : m_ListHeart) {
+		obj->Draw();
+	}
+	for (auto& obj : m_ListEnergy) {
+		obj->Draw();
+	}
+
+	m_crown->Draw();
+	m_Text_score->Draw();
+	m_Text_gameName->Draw();
+	m_Text_gameDecription->Draw();
+
 	for (auto& obj : m_ListPlayer)
 	{
 		if(obj->GetSurfBoard() != nullptr)
 			obj->GetSurfBoard()->Draw();
 		obj->Draw();
 	}
-	//m_BackGround->Draw();
+
 	for (auto it : m_listButton)
 	{
 		it->Draw();
 	}
-	m_Text_gameName->Draw();
-	m_Text_gameDecription->Draw();
 }
 
 void GSMenu::ChangePlayerLeft()
 {
-	for (auto& obj : m_ListPlayer)
+	if (m_ListPlayer.front()->Get2DPosition().x < GLfloat(screenWidth) / 2)
 	{
-		obj->Set2DPosition(obj->Get2DPosition().x + 96, obj->Get2DPosition().y);
-		obj->GetSurfBoard()->Set2DPosition(obj->Get2DPosition());
+		for (auto& obj : m_ListPlayer)
+		{
+			obj->Set2DPosition(obj->Get2DPosition().x + 96, obj->Get2DPosition().y);
+			obj->GetSurfBoard()->Set2DPosition(obj->Get2DPosition());
+		}
 	}
 }
 
 void GSMenu::ChangePlayerRight()
 {
-	for (auto& obj : m_ListPlayer)
+	if (m_ListPlayer.back()->Get2DPosition().x > GLfloat(screenWidth) / 2)
 	{
-		obj->Set2DPosition(obj->Get2DPosition().x - 96, obj->Get2DPosition().y);
-		obj->GetSurfBoard()->Set2DPosition(obj->Get2DPosition());
+		for (auto& obj : m_ListPlayer)
+		{
+			obj->Set2DPosition(obj->Get2DPosition().x - 96, obj->Get2DPosition().y);
+			obj->GetSurfBoard()->Set2DPosition(obj->Get2DPosition());
+		}
 	}
 }

@@ -32,5 +32,11 @@ private:
 	std::vector< std::shared_ptr<Player>> m_ListPlayer;
 	std::shared_ptr<Sprite2D> m_ArrowLeft;
 	std::shared_ptr<Sprite2D> m_ArrowRight;
+	std::vector<std::shared_ptr<Sprite2D>> m_ListHeart;
+	std::vector<std::shared_ptr<Sprite2D>> m_ListEnergy;
+	std::shared_ptr<Text>  m_Text_score;
+	GLint m_highscore;
+	std::shared_ptr<Sprite2D> m_crown;
+	GLboolean isUpHighscore;
 };
 
