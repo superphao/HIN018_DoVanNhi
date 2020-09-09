@@ -80,7 +80,6 @@ void GSPlay::Init()
 			i = 0;
 			j++;
 		}
-		//printf("%f, %f\n", obj->Get2DPosition().x, obj->Get2DPosition().y);
 	}
 
 	//object
@@ -134,7 +133,6 @@ void GSPlay::Init()
 	m_buttonOption->Set2DPosition((GLfloat)screenWidth - 20, 20);
 	m_buttonOption->SetSize(32, 32);
 	m_buttonOption->SetOnClick([]() {
-		//GameStateMachine::GetInstance()->ChangeState(StateTypes::STATE_Option);
 		std::dynamic_pointer_cast<GSPlay>(GameStateMachine::GetInstance()->CurrentState())->GameOption();
 		});
 
@@ -166,7 +164,6 @@ void GSPlay::Init()
 	button->SetSize(200, 70);
 	button->SetOnClick([]() {
 		GameStateMachine::GetInstance()->PopState();
-		GameStateMachine::GetInstance()->ChangeState(STATE_Menu);
 		});
 	m_listButton.push_back(button);
 
@@ -346,8 +343,6 @@ void GSPlay::HandleKeyEvents(int key, bool bIsPressed)
 			}
 			break;
 		default:
-			if (m_SttGamePlay == GAME_RUNNING)
-				Pause();
 			break;
 		}
 
@@ -535,7 +530,6 @@ void GSPlay::DoCollision()
 	{
 		GameOver();
 	}
-	//printf("%f", m_ArrObject.at(0)->GetSpeed());
 }
 
 void GSPlay::RandomSprite()

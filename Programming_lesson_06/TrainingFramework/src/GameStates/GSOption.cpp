@@ -18,6 +18,8 @@ void GSOption::Init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	m_OptionState = OPTION_MAIN;
+
 	//water
 	auto shader = ResourceManagers::GetInstance()->GetShader("TextureShader");
 	auto model = ResourceManagers::GetInstance()->GetModel("Sprite2D");
@@ -37,21 +39,11 @@ void GSOption::Init()
 			j++;
 		}
 	}
-
-	//button about
-	shader = ResourceManagers::GetInstance()->GetShader("ObjectShader");
-	texture = ResourceManagers::GetInstance()->GetTexture("button_about");
-	std::shared_ptr<GameButton> button = std::make_shared<GameButton>(model, shader, texture);
-	button->Set2DPosition(screenWidth / 2, 300);
-	button->SetSize(200, 70);
-	button->SetOnClick([]() {
-		
-		});
-	m_listButton.push_back(button);
-
+	
 	//back button
+	shader = ResourceManagers::GetInstance()->GetShader("ObjectShader");
 	texture = ResourceManagers::GetInstance()->GetTexture("button_back");
-	button = std::make_shared<GameButton>(model, shader, texture);
+	std::shared_ptr<GameButton> button = std::make_shared<GameButton>(model, shader, texture);
 	button->Set2DPosition(screenWidth / 2, 200);
 	button->SetSize(200, 70);
 	button->SetOnClick([]() {
@@ -59,13 +51,13 @@ void GSOption::Init()
 		});
 	m_listButton.push_back(button);
 
-	//button exit game
-	texture = ResourceManagers::GetInstance()->GetTexture("button_exit_game");
+	//button sound
+	texture = ResourceManagers::GetInstance()->GetTexture("button_sound");
 	button = std::make_shared<GameButton>(model, shader, texture);
-	button->Set2DPosition(screenWidth / 2, 500);
+	button->Set2DPosition(screenWidth / 2, 300);
 	button->SetSize(200, 70);
 	button->SetOnClick([]() {
-		exit(0);
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->SettingSound();
 		});
 	m_listButton.push_back(button);
 
@@ -75,15 +67,75 @@ void GSOption::Init()
 	button->Set2DPosition(screenWidth / 2, 400);
 	button->SetSize(200, 70);
 	button->SetOnClick([]() {
-		
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->Help();
 		});
 	m_listButton.push_back(button);
+
+	//button about
+	texture = ResourceManagers::GetInstance()->GetTexture("button_about");
+	button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition(screenWidth / 2, 500);
+	button->SetSize(200, 70);
+	button->SetOnClick([]() {
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->About();
+
+		});
+	m_listButton.push_back(button);
+
+	//button exit game
+	texture = ResourceManagers::GetInstance()->GetTexture("button_exit_game");
+	button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition(screenWidth / 2, 600);
+	button->SetSize(200, 70);
+	button->SetOnClick([]() {
+		exit(0);
+		});
+	m_listButton.push_back(button);
+
+	texture = ResourceManagers::GetInstance()->GetTexture("dialog");
+	m_Dialog = std::make_shared<GameButton>(model, shader, texture);
+	m_Dialog->SetSize(500, 250);
+	m_Dialog->Set2DPosition(screenWidth/2, screenHeight/2);
+
+	//buton close
+	texture = ResourceManagers::GetInstance()->GetTexture("button_close");
+	m_buttonClose = std::make_shared<GameButton>(model, shader, texture);
+	m_buttonClose->Set2DPosition(m_Dialog->Get2DPosition().x + 250 - 24 , m_Dialog->Get2DPosition().y - 125 + 24);
+	m_buttonClose->SetSize(24, 24);
+	m_buttonClose->SetOnClick([]() {
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->CloseDialog();
+		});
+
+	//button add volume
+	texture = ResourceManagers::GetInstance()->GetTexture("add");
+	button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition(screenWidth / 2 + 60, screenHeight/2);
+	button->SetSize(32, 32);
+	button->SetOnClick([]() {
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->AddVolume();
+		});
+	m_lButtonVolume.push_back(button);
+
+	//button sub volume
+	texture = ResourceManagers::GetInstance()->GetTexture("minus");
+	button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition(screenWidth / 2 - 30, screenHeight / 2);
+	button->SetSize(32, 32);
+	button->SetOnClick([]() {
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->SubVolume();
+		});
+	m_lButtonVolume.push_back(button);
 
 	////text game title
 	shader = ResourceManagers::GetInstance()->GetShader("TextShader");
 	std::shared_ptr<Font> font = ResourceManagers::GetInstance()->GetFont("arialbd");
 	m_Text_gameName = std::make_shared< Text>(shader, font, "LET'S SURF", TEXT_COLOR::BLACK, 1.5);
 	m_Text_gameName->Set2DPosition(Vector2(screenWidth / 2 - 100, 120));
+
+	//text number volume
+	m_numVolume = (GLint) m_soloud.getGlobalVolume() * 10;
+	m_Text_NumVolume = std::make_shared< Text>(shader, font, std::to_string(m_numVolume), TEXT_COLOR::BLACK, 1.5);
+	m_Text_NumVolume->Set2DPosition(screenWidth / 2, screenHeight/2);
 }
 
 void GSOption::Exit()
@@ -105,16 +157,44 @@ void GSOption::HandleEvents()
 
 void GSOption::HandleKeyEvents(int key, bool bIsPressed)
 {
+	if (bIsPressed)
+	{
+		switch (key)
+		{
+		case VK_ESCAPE:
+			if (m_OptionState != OPTION_MAIN)
+			{
+				CloseDialog();
+			}
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 void GSOption::HandleTouchEvents(int x, int y, bool bIsPressed)
 {
 	if (bIsPressed)
 	{
-		for (auto it : m_listButton)
+		if(m_OptionState == OPTION_MAIN)
+			for (auto it : m_listButton)
+			{
+				(it)->HandleTouchEvents(x, y, bIsPressed);
+				if ((it)->IsHandle()) break;
+			}
+		if (m_OptionState == OPTION_SOUND)
 		{
-			(it)->HandleTouchEvents(x, y, bIsPressed);
-			if ((it)->IsHandle()) break;
+			for(auto &obj : m_lButtonVolume)
+			{
+				obj->HandleTouchEvents(x, y, bIsPressed);
+				if (obj->IsHandle()) break;
+			}
+			m_buttonClose->HandleTouchEvents(x, y, bIsPressed);
+		}
+		if (m_OptionState == OPTION_ABOUT || m_OptionState == OPTION_HELP)
+		{
+			m_buttonClose->HandleTouchEvents(x, y, bIsPressed);
 		}
 	}
 }
@@ -126,6 +206,7 @@ void GSOption::Update(float deltaTime)
 		it->Update(deltaTime);
 	}
 	m_Text_gameName->Update(deltaTime);
+	m_Text_NumVolume->Update(deltaTime);
 }
 
 void GSOption::Draw()
@@ -140,4 +221,64 @@ void GSOption::Draw()
 		it->Draw();
 	}
 	m_Text_gameName->Draw();
+	if (m_OptionState == OPTION_SOUND)
+	{
+		m_Dialog->Draw();
+		m_buttonClose->Draw();
+		m_Text_NumVolume->Draw();
+		for (auto& obj : m_lButtonVolume)
+		{
+			obj->Draw();
+		}
+	}
+	if (m_OptionState == OPTION_ABOUT)
+	{
+		m_Dialog->Draw();
+		m_buttonClose->Draw();
+	}
+	if (m_OptionState == OPTION_HELP)
+	{
+		m_Dialog->Draw();
+		m_buttonClose->Draw();
+	}
 }
+
+void GSOption::SettingSound()
+{
+	m_OptionState = OPTION_SOUND;
+}
+
+void GSOption::CloseDialog()
+{
+	m_OptionState = OPTION_MAIN;
+}
+
+void GSOption::About()
+{
+	m_OptionState = OPTION_ABOUT;
+}
+
+void GSOption::Help()
+{
+	m_OptionState = OPTION_HELP;
+}
+
+void GSOption::AddVolume()
+{
+	if (m_numVolume < 10)
+	{
+		m_numVolume++;
+		m_Text_NumVolume->setText(std::to_string(m_numVolume));
+	}
+}
+
+void GSOption::SubVolume()
+{
+	if (m_numVolume > 0)
+	{
+		m_numVolume--;
+		m_Text_NumVolume->setText(std::to_string(m_numVolume));
+		m_soloud.stopAll();
+	}
+}
+

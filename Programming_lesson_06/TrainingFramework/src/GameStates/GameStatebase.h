@@ -6,7 +6,7 @@
 class GameStateBase
 {
 public:
-	GameStateBase(void) { DefautPlayer = -1; }
+	GameStateBase(void) { DefautPlayer = -1; m_soloud.init(); }
 	virtual ~GameStateBase(void){}
 
 	virtual void Init() = 0;
@@ -28,5 +28,6 @@ public:
 	static std::shared_ptr<GameStateBase> CreateState(StateTypes stt);
 
 	GLint DefautPlayer;
+	SoLoud::Soloud m_soloud;  // SoLoud engine core
 };
 

@@ -1,6 +1,9 @@
 #pragma once
 #include "gamestatebase.h"
 #include "GameButton.h"
+#include "soloud.h"
+#include "soloud_wav.h"
+#include "soloud_file.h"
 
 class GSMenu :
 	public GameStateBase
@@ -37,6 +40,8 @@ private:
 	std::shared_ptr<Text>  m_Text_score;
 	GLint m_highscore;
 	std::shared_ptr<Sprite2D> m_crown;
-	GLboolean isUpHighscore;
+	GLboolean isUpdateState;
+	SoLoud::Wav m_ThemeMusic;
+	SoLoud::Wav m_ButtonMusic;
 };
 

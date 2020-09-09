@@ -2,6 +2,8 @@
 #include "GSPlay.h"
 #include <fstream>
 #include "GameConfig.h"
+
+
 extern int screenWidth; //need get on Graphic engine
 extern int screenHeight; //need get on Graphic engine
 
@@ -19,12 +21,13 @@ GSMenu::~GSMenu()
 
 void GSMenu::Init()
 {
+
 	//background
 	glClearColor(56.0f / 255.0f, 194.0f / 255.0f, 238.0f / 255.0f, 0.0f);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	isUpHighscore = false;
+	isUpdateState = false;
 
 	//water
 	auto shader = ResourceManagers::GetInstance()->GetShader("TextureShader");
@@ -177,6 +180,28 @@ void GSMenu::Init()
 	font = ResourceManagers::GetInstance()->GetFont("arialbd");
 	m_Text_score = std::make_shared< Text>(shader, font, std::to_string(m_highscore) + "m", TEXT_COLOR::BLACK, 0.7);
 	m_Text_score->Set2DPosition(Vector2((GLfloat)screenWidth / 2, 30));
+
+	//theme music
+	//m_soloud.init();
+
+	FILE* p = fopen("theme_music_cut.mp3", "r");
+	if (!p)
+	{
+		return;
+	}
+	SoLoud::DiskFile* f = new SoLoud::DiskFile(p);
+	m_ThemeMusic.loadFile(f);
+	m_ThemeMusic.setLooping(true);
+	m_soloud.play(m_ThemeMusic);
+
+	p = fopen("Water_dripping.mp3", "r");
+	if (!p)
+	{
+		return;
+	}
+	f = new SoLoud::DiskFile(p);
+	m_ButtonMusic.loadFile(f);	
+
 }
 
 void GSMenu::Exit()
@@ -216,13 +241,17 @@ void GSMenu::HandleKeyEvents(int key, bool bIsPressed)
 					break;
 				}
 			}
-			isUpHighscore = true;
+			m_soloud.play(m_ButtonMusic);
+			m_ThemeMusic.stop();
+			isUpdateState = true;
 			GameStateMachine::GetInstance()->ChangeState(StateTypes::STATE_Play);
 			break;
 		case 'D':
+			m_soloud.play(m_ButtonMusic);
 			ChangePlayerRight();
 			break;
 		case 'A':
+			m_soloud.play(m_ButtonMusic);
 			ChangePlayerLeft();
 			break;
 		default:
@@ -239,7 +268,11 @@ void GSMenu::HandleTouchEvents(int x, int y, bool bIsPressed)
 		for (auto it : m_listButton)
 		{
 			(it)->HandleTouchEvents(x, y, bIsPressed);
-			if ((it)->IsHandle()) break;
+			if ((it)->IsHandle())
+			{
+				m_soloud.play(m_ButtonMusic);
+				break;
+			}
 		}
 	}
 }
@@ -264,8 +297,8 @@ void GSMenu::Update(float deltaTime)
 		it->Update(deltaTime);
 	}
 
-	//update highscore
-	if (isUpHighscore)
+	//update music + highscore
+	if (isUpdateState)
 	{
 		std::ifstream readFile("..\\Data\\Highscore\\Highscore.txt", std::ios::binary);
 		if (!readFile.is_open())
@@ -283,7 +316,9 @@ void GSMenu::Update(float deltaTime)
 			}
 			readFile.close();
 		}
-		isUpHighscore = false;
+		isUpdateState = false;
+		m_Text_score->setText(std::to_string(m_highscore) + "m");
+		m_soloud.play(m_ThemeMusic);
 	}
 }
 

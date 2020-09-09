@@ -12,6 +12,7 @@
 #include "GameObject/Text.h"
 #include "GameObject/Player.h"
 #include "GameObject/DynamicSprite.h"
+#include "soloud.h"
 #include<cstdlib>
 #include<ctime>
 
