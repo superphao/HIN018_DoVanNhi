@@ -116,7 +116,7 @@ void GSIntro::Update(float deltaTime)
 
 	if (m_enemy->Get2DPosition().y < screenHeight / 2)
 	{
-		m_enemy->Set2DPosition(m_enemy->Get2DPosition().x, m_enemy->Get2DPosition().y + 480*deltaTime);
+		m_enemy->Set2DPosition(m_enemy->Get2DPosition().x, m_enemy->Get2DPosition().y + 300*deltaTime);
 	}
 	else
 	{
@@ -125,7 +125,7 @@ void GSIntro::Update(float deltaTime)
 
 	if (m_Player->Get2DPosition().y < screenHeight / 2 + 64)
 	{
-		m_Player->Set2DPosition(m_Player->Get2DPosition().x, m_Player->Get2DPosition().y + 480 * deltaTime);
+		m_Player->Set2DPosition(m_Player->Get2DPosition().x, m_Player->Get2DPosition().y + 300 * deltaTime);
 		if (m_Player->GetSurfBoard() != nullptr)
 			m_Player->GetSurfBoard()->Set2DPosition(m_Player->Get2DPosition());
 	}
