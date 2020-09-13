@@ -16,6 +16,7 @@ protected:
 	Vector2         m_CurrentFrame;
 	GLint			m_NumSprite;
 	GLint			m_NumFrame;
+	GLfloat			m_alpha;
 
 public:
 	Sprite2D(std::shared_ptr<Models> model, std::shared_ptr<Shaders> shader, std::shared_ptr<Texture> texture);
@@ -34,6 +35,7 @@ public:
 
 	Vector2		Get2DPosition();
 	void		SetSize(GLint width, GLint height);
+	Vector2		GetSize();
 
 	void		SetFrame(Vector2 nextFrame);
 	void		SetNumFrame(GLint numFrame);
@@ -42,6 +44,7 @@ public:
 	GLint		GetNumFrame();
 	Vector2		GetFrame();
 	void		Animation(GLfloat deltatime);
+	void		SetColorAlpha(GLfloat alpha);
 
 	//xu ly va cham
 	bool CheckCollision(std::shared_ptr<Sprite2D> object);

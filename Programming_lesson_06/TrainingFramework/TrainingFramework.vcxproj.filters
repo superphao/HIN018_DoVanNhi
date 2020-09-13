@@ -78,7 +78,6 @@
     <ClCompile Include="src\GameStates\GSOption.cpp">
       <Filter>TrainingFramework\src\GameStates</Filter>
     </ClCompile>
-    <ClCompile Include="src\GameStates\GSCredit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h">
@@ -147,7 +146,6 @@
     <ClInclude Include="src\GameStates\GSOption.h">
       <Filter>TrainingFramework\src\GameStates</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameStates\GSCredit.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

@@ -21,7 +21,10 @@ public:
 	void Draw();
 
 private:
-	std::shared_ptr<Sprite2D> m_logo;
+	std::shared_ptr<Sprite2D> m_enemy;
+	std::shared_ptr<Player> m_Player;
 	float m_time;
+	std::vector<std::shared_ptr<DynamicSprite>>	m_ArrWater;
+	
 };
 

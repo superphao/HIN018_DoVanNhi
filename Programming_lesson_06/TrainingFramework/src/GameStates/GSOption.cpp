@@ -92,10 +92,23 @@ void GSOption::Init()
 		});
 	m_listButton.push_back(button);
 
+	//dialog setting sound
 	texture = ResourceManagers::GetInstance()->GetTexture("dialog");
 	m_Dialog = std::make_shared<GameButton>(model, shader, texture);
 	m_Dialog->SetSize(500, 250);
 	m_Dialog->Set2DPosition(screenWidth/2, screenHeight/2);
+
+	//dialog help
+	texture = ResourceManagers::GetInstance()->GetTexture("help");
+	m_DialogHelp = std::make_shared<GameButton>(model, shader, texture);
+	m_DialogHelp->SetSize(500, 250);
+	m_DialogHelp->Set2DPosition(screenWidth / 2, screenHeight / 2);
+
+	//dialog about
+	texture = ResourceManagers::GetInstance()->GetTexture("about");
+	m_DialogAbout = std::make_shared<GameButton>(model, shader, texture);
+	m_DialogAbout->SetSize(500, 250);
+	m_DialogAbout->Set2DPosition(screenWidth / 2, screenHeight / 2);
 
 	//buton close
 	texture = ResourceManagers::GetInstance()->GetTexture("button_close");
@@ -106,36 +119,92 @@ void GSOption::Init()
 		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->CloseDialog();
 		});
 
-	//button add volume
+	//button add volume music
 	texture = ResourceManagers::GetInstance()->GetTexture("add");
 	button = std::make_shared<GameButton>(model, shader, texture);
-	button->Set2DPosition(screenWidth / 2 + 60, screenHeight/2);
+	button->Set2DPosition(m_Dialog->Get2DPosition().x + 120, m_Dialog->Get2DPosition().y - 30);
 	button->SetSize(32, 32);
 	button->SetOnClick([]() {
-		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->AddVolume();
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->AddVolumeMusic();
 		});
 	m_lButtonVolume.push_back(button);
 
-	//button sub volume
+	//button sub volume music
 	texture = ResourceManagers::GetInstance()->GetTexture("minus");
 	button = std::make_shared<GameButton>(model, shader, texture);
-	button->Set2DPosition(screenWidth / 2 - 30, screenHeight / 2);
+	button->Set2DPosition(m_Dialog->Get2DPosition().x + 30, m_Dialog->Get2DPosition().y - 30);
 	button->SetSize(32, 32);
 	button->SetOnClick([]() {
-		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->SubVolume();
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->SubVolumeMusic();
+		});
+	m_lButtonVolume.push_back(button);
+
+	//button add volume effects
+	texture = ResourceManagers::GetInstance()->GetTexture("add");
+	button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition(m_Dialog->Get2DPosition().x + 120, m_Dialog->Get2DPosition().y + 30);
+	button->SetSize(32, 32);
+	button->SetOnClick([]() {
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->AddVolumeEffect();
+		});
+	m_lButtonVolume.push_back(button);
+
+	//button sub volume effects
+	texture = ResourceManagers::GetInstance()->GetTexture("minus");
+	button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition(m_Dialog->Get2DPosition().x + 30, m_Dialog->Get2DPosition().y + 30);
+	button->SetSize(32, 32);
+	button->SetOnClick([]() {
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->SubVolumeEffect();
+		});
+	m_lButtonVolume.push_back(button);
+
+	//button accept
+	texture = ResourceManagers::GetInstance()->GetTexture("accept");
+	button = std::make_shared<GameButton>(model, shader, texture);
+	button->Set2DPosition(m_Dialog->Get2DPosition().x, m_Dialog->Get2DPosition().y + 125 - 32);
+	button->SetSize(32, 32);
+	button->SetOnClick([]() {
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->SetVolume();
+		std::dynamic_pointer_cast<GSOption>(GameStateMachine::GetInstance()->CurrentState())->CloseDialog();
 		});
 	m_lButtonVolume.push_back(button);
 
 	////text game title
 	shader = ResourceManagers::GetInstance()->GetShader("TextShader");
 	std::shared_ptr<Font> font = ResourceManagers::GetInstance()->GetFont("arialbd");
-	m_Text_gameName = std::make_shared< Text>(shader, font, "LET'S SURF", TEXT_COLOR::BLACK, 1.5);
-	m_Text_gameName->Set2DPosition(Vector2(screenWidth / 2 - 100, 120));
+	std::shared_ptr<Text> text = std::make_shared< Text>(shader, font, "LET'S SURF", TEXT_COLOR::BLACK, 1.5);
+	text->Set2DPosition(Vector2(screenWidth / 2 - 100, 120));
+	m_ListText.push_back(text);
 
-	//text number volume
-	m_numVolume = (GLint) m_soloud.getGlobalVolume() * 10;
-	m_Text_NumVolume = std::make_shared< Text>(shader, font, std::to_string(m_numVolume), TEXT_COLOR::BLACK, 1.5);
-	m_Text_NumVolume->Set2DPosition(screenWidth / 2, screenHeight/2);
+	//text title dialog option
+	font = ResourceManagers::GetInstance()->GetFont("arialbd");
+	text = std::make_shared< Text>(shader, font, "Sound option", TEXT_COLOR::BLACK, 0.8);
+	text->Set2DPosition(m_Dialog->Get2DPosition().x - 50, m_Dialog->Get2DPosition().y - 125 + 30);
+	m_ListText.push_back(text);
+
+	//text music
+	text = std::make_shared< Text>(shader, font, "Music:", TEXT_COLOR::BLACK, 0.8);
+	text->Set2DPosition(m_Dialog->Get2DPosition().x - 150, m_Dialog->Get2DPosition().y - 20);
+	m_ListText.push_back(text);
+
+	//text number volume music
+	m_numVolumeMusic = (GLint)Application::GetInstance()->m_soloudMusic.getGlobalVolume() * 10;
+	text = std::make_shared< Text>(shader, font, std::to_string(m_numVolumeMusic), TEXT_COLOR::BLACK, 0.8);
+	text->Set2DPosition(m_Dialog->Get2DPosition().x + 60, m_Dialog->Get2DPosition().y - 20);
+	m_ListText.push_back(text);
+
+	//text sound effect
+	text = std::make_shared< Text>(shader, font, "Sound effects:", TEXT_COLOR::BLACK, 0.8);
+	text->Set2DPosition(m_Dialog->Get2DPosition().x - 150, m_Dialog->Get2DPosition().y + 40);
+	m_ListText.push_back(text);
+
+	//text number volume effects
+	m_numVolumeEffect = (GLint)Application::GetInstance()->m_soloudEffects.getGlobalVolume() * 10;
+	text = std::make_shared< Text>(shader, font, std::to_string(m_numVolumeEffect), TEXT_COLOR::BLACK, 0.8);
+	text->Set2DPosition(m_Dialog->Get2DPosition().x + 60, m_Dialog->Get2DPosition().y + 40);
+	m_ListText.push_back(text);
+
 }
 
 void GSOption::Exit()
@@ -205,8 +274,8 @@ void GSOption::Update(float deltaTime)
 	{
 		it->Update(deltaTime);
 	}
-	m_Text_gameName->Update(deltaTime);
-	m_Text_NumVolume->Update(deltaTime);
+	/*m_Text_gameName->Update(deltaTime);
+	m_Text_NumVolume->Update(deltaTime);*/
 }
 
 void GSOption::Draw()
@@ -220,12 +289,16 @@ void GSOption::Draw()
 	{
 		it->Draw();
 	}
-	m_Text_gameName->Draw();
+	m_ListText.at(TEXT_NAME_GAME)->Draw();
 	if (m_OptionState == OPTION_SOUND)
 	{
 		m_Dialog->Draw();
 		m_buttonClose->Draw();
-		m_Text_NumVolume->Draw();
+		m_ListText.at(TEXT_NUM_VOLUME_MUSIC)->Draw();
+		m_ListText.at(TEXT_TITLE_DIALOG)->Draw();
+		m_ListText.at(TEXT_MUSIC)->Draw();
+		m_ListText.at(TEXT_SOUND_EFFECTS)->Draw();
+		m_ListText.at(TEXT_NUM_VOLUME_EFFECT)->Draw();
 		for (auto& obj : m_lButtonVolume)
 		{
 			obj->Draw();
@@ -233,12 +306,12 @@ void GSOption::Draw()
 	}
 	if (m_OptionState == OPTION_ABOUT)
 	{
-		m_Dialog->Draw();
+		m_DialogAbout->Draw();
 		m_buttonClose->Draw();
 	}
 	if (m_OptionState == OPTION_HELP)
 	{
-		m_Dialog->Draw();
+		m_DialogHelp->Draw();
 		m_buttonClose->Draw();
 	}
 }
@@ -263,22 +336,45 @@ void GSOption::Help()
 	m_OptionState = OPTION_HELP;
 }
 
-void GSOption::AddVolume()
+void GSOption::AddVolumeMusic()
 {
-	if (m_numVolume < 10)
+	if (m_numVolumeMusic < 10)
 	{
-		m_numVolume++;
-		m_Text_NumVolume->setText(std::to_string(m_numVolume));
+		m_numVolumeMusic++;
+		m_ListText.at(TEXT_NUM_VOLUME_MUSIC)->setText(std::to_string(m_numVolumeMusic));
 	}
 }
 
-void GSOption::SubVolume()
+void GSOption::SubVolumeMusic()
 {
-	if (m_numVolume > 0)
+	if (m_numVolumeMusic > 0)
 	{
-		m_numVolume--;
-		m_Text_NumVolume->setText(std::to_string(m_numVolume));
-		m_soloud.stopAll();
+		m_numVolumeMusic--;
+		m_ListText.at(TEXT_NUM_VOLUME_MUSIC)->setText(std::to_string(m_numVolumeMusic));
 	}
+}
+
+void GSOption::AddVolumeEffect()
+{
+	if (m_numVolumeEffect < 10)
+	{
+		m_numVolumeEffect++;
+		m_ListText.at(TEXT_NUM_VOLUME_EFFECT)->setText(std::to_string(m_numVolumeEffect));
+	}
+}
+
+void GSOption::SubVolumeEffect()
+{
+	if (m_numVolumeEffect > 0)
+	{
+		m_numVolumeEffect--;
+		m_ListText.at(TEXT_NUM_VOLUME_EFFECT)->setText(std::to_string(m_numVolumeEffect));
+	}
+}
+
+void GSOption::SetVolume()
+{
+	Application::GetInstance()->m_soloudMusic.setGlobalVolume(m_numVolumeMusic*0.1f);
+	Application::GetInstance()->m_soloudEffects.setGlobalVolume(m_numVolumeEffect * 0.1f);
 }
 

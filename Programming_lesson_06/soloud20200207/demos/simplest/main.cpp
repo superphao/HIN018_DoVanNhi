@@ -34,15 +34,20 @@ int main(int argc, char *argv[])
 	// Define a couple of variables
 	SoLoud::Soloud soloud;  // SoLoud engine core
 	SoLoud::Speech speech;  // A sound source (speech, in this case)
+	SoLoud::Speech speech1;
+	SoLoud::handle gh = soloud.createVoiceGroup();
+	soloud.addVoiceToGroup(gh, soloud.play(speech));
+	soloud.addVoiceToGroup(gh, soloud.play(speech1));
 
 	// Configure sound source
 	speech.setText("1 2 3   1 2 3   Hello world. Welcome to So-Loud.");
-
+	speech1.setText("sdasjdsdasdasadsasdasdasdsadsad");
 	// initialize SoLoud.
 	soloud.init();
 
 	// Play the sound source (we could do this several times if we wanted)
-	soloud.play(speech);
+	//soloud.play(speech);
+	soloud.setPause(gh, 0);
 
 	// Wait until sounds have finished
 	while (soloud.getActiveVoiceCount() > 0)

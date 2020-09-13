@@ -17,6 +17,8 @@ Application::~Application()
 
 void Application::Init()
 {
+	m_soloudMusic.init();
+	m_soloudEffects.init();
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	GameStateMachine::GetInstance()->PushState(StateTypes::STATE_Intro);
 }

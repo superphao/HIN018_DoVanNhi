@@ -10,6 +10,8 @@ enum DynamicSpriteType
     SLOWDOWN64,
     SLOWDOWN192,
     WHIRLPOOL,
+    HEART,
+    ENERGY,
 };
 
 enum StateMoveSprite
@@ -27,6 +29,7 @@ enum StateSprite
     SLOWDOWN,
     NORMAL,
     STOP,
+    SPEEDUP,
 };
 
 class DynamicSprite :
@@ -41,6 +44,7 @@ public:
     std::shared_ptr<DynamicSprite> GetEffects();
     void SetSpeed(GLfloat speed);
     GLfloat GetSpeed();
+    void SetMaxSpeed(GLfloat maxSpeed);
 
 protected:
     std::shared_ptr<DynamicSprite> m_Effects;

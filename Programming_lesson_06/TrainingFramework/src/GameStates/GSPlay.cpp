@@ -30,11 +30,15 @@ void GSPlay::Init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	srand(time(NULL));
 	m_StateMove = FREEZE;
+	m_StateSprite = SPEEDUP;
 	m_SttGamePlay = GAME_RUNNING;
+	m_StatePlayer = PLAYER_NORMAL;
 	m_TimeBornObj = 0;
+	m_TimeBornItem = 0;
 	m_score = 0;
-	m_SpeedMove = 5;
+	m_SpeedMove = 6;
 	m_isPause = false;
 
 	auto model = ResourceManagers::GetInstance()->GetModel("Sprite2D");
@@ -43,13 +47,13 @@ void GSPlay::Init()
 
 	//player
 	texture = ResourceManagers::GetInstance()->GetTexture("player64");
-	shader = ResourceManagers::GetInstance()->GetShader("ObjectShader");
+	shader = ResourceManagers::GetInstance()->GetShader("ShadowShader");
 	m_Player = std::make_shared<Player>(model, shader, texture);
 	m_Player->Set2DPosition((GLfloat)screenWidth / 2, (GLfloat)(screenHeight / 2 - 100));
 	m_Player->SetSize(64, 64);
 	m_Player->SetNumFrame(9);
 	m_Player->SetNumSprite(13);
-	m_Player->SetFrame(Vector2(0, DefautPlayer));
+	m_Player->SetFrame(Vector2(8, DefautPlayer));
 	m_Player->Init();
 	m_Player->SetName("player");
 
@@ -60,11 +64,21 @@ void GSPlay::Init()
 	surfBoard->SetSize(64, 64);
 	surfBoard->SetNumFrame(3);
 	surfBoard->SetNumSprite(13);
-	surfBoard->SetFrame(Vector2(0, 2));
+	surfBoard->SetFrame(Vector2(8, 2));
 	surfBoard->Init();
 	m_Player->SetSurfBoard(surfBoard);
 
+	//shadow
+	texture = ResourceManagers::GetInstance()->GetTexture("shadow");
+	std::shared_ptr<Sprite2D> shadow = std::make_shared<Sprite2D>(model, shader, texture);
+	shadow->Set2DPosition((GLfloat)screenWidth / 2, (GLfloat)(screenHeight / 2 - 90));
+	shadow->SetColorAlpha(0.8);
+	shadow->SetSize(48, 48);
+	shadow->Init();
+	m_Player->SetShadow(shadow);
+
 	//Water
+	shader = ResourceManagers::GetInstance()->GetShader("ObjectShader");
 	texture = ResourceManagers::GetInstance()->GetTexture("water256");
 	for (int i = 0; i < 16; ++i) {
 		m_ArrWater.push_back(std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove));
@@ -83,21 +97,37 @@ void GSPlay::Init()
 	}
 
 	//object
-	texture = ResourceManagers::GetInstance()->GetTexture("objects64");
-	m_ArrObject.push_back(std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove));
-	m_ArrObject.at(0)->SetSize(64, 64);
-	m_ArrObject.at(0)->SetNumSprite(30);
-	srand(time(NULL));
-	m_ArrObject.at(0)->Set2DPosition((GLfloat)(rand() % 640), rand() % (screenHeight / 2) + m_Player->Get2DPosition().y);
-	m_ArrObject.at(0)->Init();
-	texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
-	std::shared_ptr<DynamicSprite> effect = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
-	effect->SetSize(96, 96);
-	effect->Set2DPosition(m_ArrObject.back()->Get2DPosition());
-	effect->SetNumFrame(3);
-	effect->SetFrame(Vector2(0, 2));
-	effect->Init();
-	m_ArrObject.at(0)->SetEffects(effect);
+	texture = ResourceManagers::GetInstance()->GetTexture("island1280");
+	std::shared_ptr<DynamicSprite> object = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+	object->SetSize(1280, 512);
+	object->Set2DPosition(screenWidth/2, 80);
+	object->Init();
+	m_ArrObject.push_back(object);
+
+	//item energy
+	for (int i = 0; i < 4; ++i)
+	{
+		texture = ResourceManagers::GetInstance()->GetTexture("interact64");
+		std::shared_ptr<DynamicSprite> item = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		item->SetName("energy");
+		item->SetSize(64, 64);
+		item->Set2DPosition(screenWidth / 2 - 160 + i * 96, screenHeight / 2 - 20);
+		item->SetNumFrame(4);
+		item->SetNumSprite(8);
+		item->SetFrame(Vector2(2, 0));
+		item->Init();
+
+		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
+		std::shared_ptr<DynamicSprite> effect = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		effect->SetSize(96, 96);
+		effect->Set2DPosition(item->Get2DPosition());
+		effect->SetNumFrame(3);
+		effect->SetFrame(Vector2(0, 2));
+		effect->Init();
+		item->SetEffects(effect);
+		item->Init();
+		m_ArrObject.push_back(item);
+	}
 
 	//heart
 	for (int i = 0; i < 3; ++i)
@@ -190,25 +220,43 @@ void GSPlay::Init()
 	m_DesciptSttGame = std::make_shared< Text>(shader, font, "SPACEBAR to resume surfing", TEXT_COLOR::BLACK, 0.8);
 	m_DesciptSttGame->Set2DPosition(Vector2((GLfloat)screenWidth / 2 - 110, 140));
 
-	//open file high score
 	//open file highscore
-	std::ifstream readFile("..\\Data\\Highscore\\Highscore.txt", std::ios::binary);
-	if (!readFile.is_open())
+	int buffer[1];
+	std::fstream file("..\\Data\\Highscore\\Highscore.bin", std::ios::in | std::ios::binary);
+	if (file.is_open())
 	{
-		LOGE("ERROR Highscore.txt \n");
-		return;
+		LOGI("Load File:Highscore.bin\t\t");
+		file.read(reinterpret_cast<char*>(buffer), sizeof(GLint));
 	}
-	else
-	{
-		LOGI("Load File:Highscore.txt\t\t");
+	else LOGE("ERROR Highscore.bin \n");
+	file.close();
+	buffer[0] < 0 ? m_highscore = 0 : m_highscore = buffer[0];
 
-		while (!readFile.eof())
-		{
-			readFile >> m_highscore;
-		}
-		readFile.close();
-	}
+	//theme music
+	m_ThemeMusic.load("..\\Data\\Music\\music_theme_play1.wav");
+	m_ThemeMusic.setLooping(true);
+	Application::GetInstance()->m_soloudMusic.play(m_ThemeMusic);
 
+	//slowdown music
+	m_SlowdownMusic.load("..\\Data\\Music\\slowdown.wav");
+
+	//collisions music
+	m_CollisionsMusic.load("..\\Data\\Music\\collisions.wav");
+
+	//game over music
+	m_GameOverMusic.load("..\\Data\\Music\\gameOver.wav");
+
+	//collisions whirlpool music
+	m_colWhirlPoolMusic.load("..\\Data\\Music\\whirlpool.wav");
+
+	//button music
+	m_ButtonMusic.load("..\\Data\\Music\\Water_dripping.wav");
+
+	//player jump music
+	m_plJumpMusic.load("..\\Data\\Music\\jump.wav");
+
+	//player pick item music
+	m_itemMusic.load("..\\Data\\Music\\item.wav");
 }
 
 void GSPlay::Exit()
@@ -231,24 +279,22 @@ void GSPlay::Resume()
 
 void GSPlay::GameOver()
 {
+	Application::GetInstance()->m_soloudEffects.play(m_GameOverMusic);
 	m_SttGamePlay = GAME_OVER;
 	m_TextSttGame->setText("SURF AGAIN");
 	m_DesciptSttGame->setText("SPACEBAR to surf again");
 	m_isPause = true;
 	if (m_score > m_highscore)
 	{
-		std::ofstream writeFile("..\\Data\\Highscore\\Highscore.txt", std::ios::binary);
-		if (!writeFile.is_open())
+		int buffer[] = { m_score };
+		std::fstream file("..\\Data\\Highscore\\Highscore.bin", std::ios::out | std::ios::binary);
+		if (file.is_open())
 		{
-			LOGE("ERROR Highscore.txt \n");
-			return;
+			LOGI("Load File:Highscore.bin\t\t");
+			file.write(reinterpret_cast<char*>(buffer), sizeof(GLint));
 		}
-		else
-		{
-			LOGI("Load File:Highscore.txt\t\t");
-			writeFile << (GLint) m_score;
-			writeFile.close();
-		}
+		else LOGE("ERROR Highscore.txt \n");
+		file.close();
 	}
 }
 
@@ -275,56 +321,105 @@ void GSPlay::HandleKeyEvents(int key, bool bIsPressed)
 	if (bIsPressed) {
 		switch (key) {
 		case 'S':
-			m_Player->SetFrame(Vector2(3, m_Player->GetFrame().y));
-			m_Player->GetSurfBoard()->SetFrame(Vector2(3, m_Player->GetSurfBoard()->GetFrame().y));
-			m_StateMove = MOVE_FORWARD;
-			if(m_StatePlayer == PLAYER_DIE)
-				m_StatePlayer = PLAYER_NORMAL;
+			if (m_SttGamePlay == GAME_RUNNING)
+			{
+				m_Player->SetFrame(Vector2(3, m_Player->GetFrame().y));
+				m_Player->GetSurfBoard()->SetFrame(Vector2(3, m_Player->GetSurfBoard()->GetFrame().y));
+				m_StateMove = MOVE_FORWARD;
+				if (m_StatePlayer == PLAYER_DIE)
+					m_StatePlayer = PLAYER_NORMAL;
+			}
 			break;
 		case 'W':
-			m_Player->SetFrame(Vector2(0, m_Player->GetFrame().y));
-			m_Player->GetSurfBoard()->SetFrame(Vector2(0, m_Player->GetSurfBoard()->GetFrame().y));
-			m_StateMove = FREEZE;
+			if (m_SttGamePlay == GAME_RUNNING)
+			{
+				if (m_StatePlayer == PLAYER_JUMP)
+				{
+					m_Player->SetFrame(Vector2(11, m_Player->GetFrame().y));
+					m_Player->GetSurfBoard()->SetFrame(Vector2(11, m_Player->GetSurfBoard()->GetFrame().y));
+				}
+				else
+				{
+					m_Player->SetFrame(Vector2(0, m_Player->GetFrame().y));
+					m_Player->GetSurfBoard()->SetFrame(Vector2(0, m_Player->GetSurfBoard()->GetFrame().y));
+					m_StateMove = FREEZE;
+				}
+			}
 			break;
 		case 'A':
-			if (m_StateMove == MOVE_LEFT) {
-				m_Player->SetFrame(Vector2(1, m_Player->GetFrame().y));
-				m_Player->GetSurfBoard()->SetFrame(Vector2(1, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateMove = MOVE_LEFT_PLUS;
+			if (m_SttGamePlay == GAME_RUNNING)
+			{
+				if (m_StatePlayer == PLAYER_JUMP)
+				{
+					m_Player->SetFrame(Vector2(10, m_Player->GetFrame().y));
+					m_Player->GetSurfBoard()->SetFrame(Vector2(10, m_Player->GetSurfBoard()->GetFrame().y));
+				}
+				else
+				{
+					if (m_StateMove == MOVE_LEFT) {
+						m_Player->SetFrame(Vector2(1, m_Player->GetFrame().y));
+						m_Player->GetSurfBoard()->SetFrame(Vector2(1, m_Player->GetSurfBoard()->GetFrame().y));
+						m_StateMove = MOVE_LEFT_PLUS;
+					}
+					else if (m_StateMove == MOVE_LEFT_PLUS) {
+						m_Player->SetFrame(Vector2(1, m_Player->GetFrame().y));
+						m_Player->GetSurfBoard()->SetFrame(Vector2(1, m_Player->GetSurfBoard()->GetFrame().y));
+						m_StateMove = MOVE_LEFT_PLUS;
+					}
+					else {
+						m_Player->SetFrame(Vector2(2, m_Player->GetFrame().y));
+						m_Player->GetSurfBoard()->SetFrame(Vector2(2, m_Player->GetSurfBoard()->GetFrame().y));
+						m_StateMove = MOVE_LEFT;
+					}
+					if (m_StatePlayer == PLAYER_DIE)
+						m_StatePlayer = PLAYER_NORMAL;
+				}
 			}
-			else if (m_StateMove == MOVE_LEFT_PLUS) {
-				m_Player->SetFrame(Vector2(1, m_Player->GetFrame().y));
-				m_Player->GetSurfBoard()->SetFrame(Vector2(1, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateMove = MOVE_LEFT_PLUS;
-			}
-			else {
-				m_Player->SetFrame(Vector2(2, m_Player->GetFrame().y));
-				m_Player->GetSurfBoard()->SetFrame(Vector2(2, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateMove = MOVE_LEFT;
-			}
-			if (m_StatePlayer == PLAYER_DIE)
-				m_StatePlayer = PLAYER_NORMAL;
 			break;
 		case 'D':
-			if (m_StateMove == MOVE_RIGHT) {
-				m_Player->SetFrame(Vector2(5, m_Player->GetFrame().y));
-				m_Player->GetSurfBoard()->SetFrame(Vector2(5, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateMove = MOVE_RIGHT_PLUS;
+
+			if (m_SttGamePlay == GAME_RUNNING)
+			{
+				if (m_StatePlayer == PLAYER_JUMP)
+				{
+					m_Player->SetFrame(Vector2(12, m_Player->GetFrame().y));
+					m_Player->GetSurfBoard()->SetFrame(Vector2(12, m_Player->GetSurfBoard()->GetFrame().y));
+				}
+				else
+				{
+					if (m_StateMove == MOVE_RIGHT) {
+						m_Player->SetFrame(Vector2(5, m_Player->GetFrame().y));
+						m_Player->GetSurfBoard()->SetFrame(Vector2(5, m_Player->GetSurfBoard()->GetFrame().y));
+						m_StateMove = MOVE_RIGHT_PLUS;
+					}
+					else if (m_StateMove == MOVE_RIGHT_PLUS) {
+						m_Player->SetFrame(Vector2(5, m_Player->GetFrame().y));
+						m_Player->GetSurfBoard()->SetFrame(Vector2(5, m_Player->GetSurfBoard()->GetFrame().y));
+						m_StateMove = MOVE_RIGHT_PLUS;
+					}
+					else {
+						m_Player->SetFrame(Vector2(4, m_Player->GetFrame().y));
+						m_Player->GetSurfBoard()->SetFrame(Vector2(4, m_Player->GetSurfBoard()->GetFrame().y));
+						m_StateMove = MOVE_RIGHT;
+					}
+					if (m_StatePlayer == PLAYER_DIE)
+						m_StatePlayer = PLAYER_NORMAL;
+				}
 			}
-			else if (m_StateMove == MOVE_RIGHT_PLUS) {
-				m_Player->SetFrame(Vector2(5, m_Player->GetFrame().y));
-				m_Player->GetSurfBoard()->SetFrame(Vector2(5, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateMove = MOVE_RIGHT_PLUS;
+			break;
+		case VK_SHIFT:
+			if (m_StateMove != FREEZE && m_StatePlayer != PLAYER_JUMP && m_Player->GetEnergy() > 0)
+			{
+				Application::GetInstance()->m_soloudEffects.play(m_plJumpMusic);
+				m_Player->GetShadow()->SetSize(48, 48);
+				m_StatePlayer = PLAYER_JUMP;
+				m_StateMove = MOVE_FORWARD;
+				m_ListEnergy.at(m_Player->GetEnergy() - 1)->SetFrame(Vector2(0, 2));
+				m_Player->SetEnergy(m_Player->GetEnergy() - 1);
 			}
-			else {
-				m_Player->SetFrame(Vector2(4, m_Player->GetFrame().y));
-				m_Player->GetSurfBoard()->SetFrame(Vector2(4, m_Player->GetSurfBoard()->GetFrame().y));
-				m_StateMove = MOVE_RIGHT;
-			}
-			if (m_StatePlayer == PLAYER_DIE)
-				m_StatePlayer = PLAYER_NORMAL;
 			break;
 		case VK_SPACE:
+			Application::GetInstance()->m_soloudEffects.play(m_ButtonMusic);
 			if (m_SttGamePlay == GAME_RUNNING)
 				Pause();
 			else if (m_SttGamePlay == GAME_PAUSE)
@@ -333,7 +428,8 @@ void GSPlay::HandleKeyEvents(int key, bool bIsPressed)
 				ReStart();
 			break;
 		case VK_ESCAPE:
-			if (m_SttGamePlay == GAME_RUNNING)
+			Application::GetInstance()->m_soloudEffects.play(m_ButtonMusic);
+			if (m_SttGamePlay != GAME_OPTION)
 			{
 				GameOption();
 			}
@@ -354,6 +450,7 @@ void GSPlay::HandleTouchEvents(int x, int y, bool bIsPressed)
 	if (bIsPressed)
 	{
 		m_buttonOption->HandleTouchEvents(x, y, bIsPressed);
+		if (m_buttonOption->IsHandle()) Application::GetInstance()->m_soloudEffects.play(m_ButtonMusic);
 		if(m_SttGamePlay == GAME_OPTION)
 			for (auto it : m_listButton)
 			{
@@ -372,20 +469,51 @@ void GSPlay::Update(float deltaTime)
 			RandomSprite();
 			m_TimeBornObj -= 1;
 		}
-		m_TimeBornObj += m_ArrObject.back()->GetSpeed() /2 * deltaTime;
-		//m_TimeBornObj += deltaTime;
+		m_TimeBornObj += m_ArrObject.back()->GetSpeed() / 1.5 * deltaTime;
+
+		//sinh item
+		if (m_TimeBornItem > 1) {
+			RandomItem();
+			m_TimeBornItem -= 1;
+		}
+		m_TimeBornItem += m_ArrObject.back()->GetSpeed() / 30 * deltaTime;
 
 		//xu ly va cham
 		this->DoCollision();
 
+		//tang speed khi dat den nguong diem
+		if (m_score > 100)
+		{
+			m_SpeedMove = 7;
+		}
+		else if (m_score > 300)
+		{
+			m_SpeedMove = 8;
+		}
+		else if (m_score > 600)
+		{
+			m_SpeedMove = 9;
+		}
+		else if (m_score > 1000)
+		{
+			m_SpeedMove = 10;
+		}
+		else if (m_score > 1500)
+		{
+			m_SpeedMove = 11;
+		}
+
 		//update
 		m_Player->Update(deltaTime, m_StatePlayer);
-		//m_Player->GetSurfBoard()->Update(deltaTime)
 		m_Player->GetSurfBoard()->Animation(deltaTime);
 		for (auto& obj : m_ArrWater) {
+			if ((GLint) m_score % 100 == 0)
+				obj->SetMaxSpeed(m_SpeedMove);
 			obj->Update(deltaTime, m_StateMove, m_StateSprite);
 		}
 		for (auto& obj : m_ArrObject) {
+			if ((GLint) m_score % 100 == 0)
+				obj->SetMaxSpeed(m_SpeedMove);
 			obj->Update(deltaTime, m_StateMove, m_StateSprite);
 			obj->Animation(deltaTime);
 			if (obj->GetEffects() != nullptr)
@@ -396,7 +524,7 @@ void GSPlay::Update(float deltaTime)
 		}
 
 		//xet trang thai di chuyen neu ma khong dung yen thi set speed cua vat thanh binh thuong
-		if (m_StateMove != FREEZE)
+		if (m_StateMove != FREEZE && m_StateSprite != SPEEDUP)
 		{
 			m_StateSprite = NORMAL;
 		}
@@ -407,12 +535,24 @@ void GSPlay::Update(float deltaTime)
 			{
 				obj.swap(m_ArrObject.back());
 				m_ArrObject.pop_back();
-				//printf("%d", m_ArrObject.size());
 				break;
 			}
 		}
+
+		//update score
 		m_score += m_ArrObject.back()->GetSpeed() * deltaTime;
 		m_Text_score->setText(std::to_string((GLint) m_score) + "m");
+
+		//player jump
+		if (m_StatePlayer == PLAYER_JUMP)
+		{
+			if (m_Player->GetTimeJump() < 0)
+			{
+				m_Player->SetFrame(Vector2(3, m_Player->GetFrame().y));
+				m_Player->GetSurfBoard()->SetFrame(Vector2(3, m_Player->GetSurfBoard()->GetFrame().y));
+				m_StatePlayer = PLAYER_NORMAL;
+			}
+		}
 	}
 	
 	for (auto& obj : m_listButton)
@@ -426,15 +566,7 @@ void GSPlay::Draw()
 	for (auto& obj : m_ArrWater) {
 		obj->Draw();
 	}
-	for (auto& obj : m_ListHeart) {
-		obj->Draw();
-	}
-	for (auto& obj : m_ListEnergy) {
-		obj->Draw();
-	}
 
-	m_Player->GetSurfBoard()->Draw();
-	m_Player->Draw();
 	for (auto& obj : m_ArrObject) {
 		obj->Draw();
 		if (obj->GetEffects() != nullptr)
@@ -442,8 +574,14 @@ void GSPlay::Draw()
 			obj->GetEffects()->Draw();
 		}
 	}
-	//m_BackGround->Draw();
-	m_Text_score->Draw();
+
+	if (m_StatePlayer == PLAYER_JUMP)
+	{
+		m_Player->GetShadow()->Draw();
+	}
+	m_Player->GetSurfBoard()->Draw();
+	m_Player->Draw();
+
 	if (m_SttGamePlay == GAME_PAUSE || m_SttGamePlay == GAME_OVER)
 	{
 		m_BackgroundOption->Draw();
@@ -461,6 +599,14 @@ void GSPlay::Draw()
 			obj->Draw();
 		}
 	}
+
+	m_Text_score->Draw();
+	for (auto& obj : m_ListHeart) {
+		obj->Draw();
+	}
+	for (auto& obj : m_ListEnergy) {
+		obj->Draw();
+	}
 }
 
 void GSPlay::SetNewPostionForBullet()
@@ -470,19 +616,22 @@ void GSPlay::SetNewPostionForBullet()
 void GSPlay::DoCollision()
 {
 	for (auto& obj : m_ArrObject)
+	{
 		if (m_Player->CheckCollision(obj) && !m_Player->IsProtected())
 		{
 			if (obj->GetName() == "slowdown")
 			{
-				//if(m_StateSprite != SLOWDOWN)
-					m_StateSprite = SLOWDOWN;
-					if (m_Player->Get2DPosition().y > obj->Get2DPosition().y)
-					{
-						m_StateSprite = NORMAL;
-					}
+				Application::GetInstance()->m_soloudEffects.play(m_SlowdownMusic);
+				m_StateSprite = SLOWDOWN;
+				if (m_Player->Get2DPosition().y > obj->Get2DPosition().y)
+				{
+					m_StateSprite = NORMAL;
+					m_SlowdownMusic.stop();
+				}
 			}
 			else if (obj->GetName() == "whirlpool")
 			{
+				Application::GetInstance()->m_soloudEffects.play(m_colWhirlPoolMusic);
 				obj->SetName("whirlpool_collided");
 				switch (m_StateMove)
 				{
@@ -494,7 +643,7 @@ void GSPlay::DoCollision()
 				case MOVE_RIGHT:
 					m_Player->SetFrame(Vector2(2, m_Player->GetFrame().y));
 					m_Player->GetSurfBoard()->SetFrame(Vector2(2, m_Player->GetSurfBoard()->GetFrame().y));
-					m_StateMove = MOVE_LEFT;	
+					m_StateMove = MOVE_LEFT;
 					break;
 				case MOVE_FORWARD:
 					m_Player->SetFrame(Vector2(2, m_Player->GetFrame().y));
@@ -517,15 +666,56 @@ void GSPlay::DoCollision()
 					break;
 				}
 			}
-			else if(obj->GetName() == "harmful")
+			else if (obj->GetName() == "harmful")
 			{
+				obj->SetName("harmful_collided");
+				if (m_StatePlayer == PLAYER_NORMAL)
+					Application::GetInstance()->m_soloudEffects.play(m_CollisionsMusic);
 				m_StateMove = FREEZE;
 				m_StatePlayer = PLAYER_DIE;
-				if (m_Player->GetHeart() >= 0 && m_Player->GetHeart() < 3)
-					m_ListHeart.at(m_Player->GetHeart())->SetFrame(Vector2(0, 3));
+				m_StateSprite = SPEEDUP;
+				if (m_Player->GetHeart() > 0 && m_Player->GetHeart() <= 3)
+					m_ListHeart.at(m_Player->GetHeart() - 1)->SetFrame(Vector2(0, 3));
 			}
+			else if (obj->GetName() == "energy" && m_Player->GetEnergy() < 3)
+			{
+				Application::GetInstance()->m_soloudEffects.play(m_itemMusic);
+				m_Player->SetEnergy(m_Player->GetEnergy() + 1);
+				m_ListEnergy.at(m_Player->GetEnergy() - 1)->SetFrame(Vector2(1, 2));
+				obj.swap(m_ArrObject.back());
+				m_ArrObject.pop_back();
+			}
+			else if (obj->GetName() == "heart" && m_Player->GetHeart() < 3)
+			{
+				Application::GetInstance()->m_soloudEffects.play(m_itemMusic);
+				m_Player->SetHeart(m_Player->GetHeart() + 1);
+				m_ListHeart.at(m_Player->GetHeart() - 1)->SetFrame(Vector2(1, 3));
+				obj.swap(m_ArrObject.back());
+				m_ArrObject.pop_back();
+			}
+
 			break;
 		}
+		else if (m_Player->CheckCollision(obj))
+		{
+			if (obj->GetName() == "energy" && m_Player->GetEnergy() < 3)
+			{
+				Application::GetInstance()->m_soloudEffects.play(m_itemMusic);
+				m_Player->SetEnergy(m_Player->GetEnergy() + 1);
+				m_ListEnergy.at(m_Player->GetEnergy() - 1)->SetFrame(Vector2(1, 2));
+				obj.swap(m_ArrObject.back());
+				m_ArrObject.pop_back();
+			}
+			else if (obj->GetName() == "heart" && m_Player->GetHeart() < 3)
+			{
+				Application::GetInstance()->m_soloudEffects.play(m_itemMusic);
+				m_Player->SetHeart(m_Player->GetHeart() + 1);
+				m_ListHeart.at(m_Player->GetHeart() - 1)->SetFrame(Vector2(1, 3));
+				obj.swap(m_ArrObject.back());
+				m_ArrObject.pop_back();
+			}
+		}
+	}
 	if (m_Player->GetHeart() == 0)
 	{
 		GameOver();
@@ -535,7 +725,6 @@ void GSPlay::DoCollision()
 void GSPlay::RandomSprite()
 {
 	//printf("%d", m_ArrObject.size());
-	//srand(time(NULL));
 	std::vector<DynamicSpriteType> DynamicSpriteType;
 	DynamicSpriteType.push_back(OBJECT64);
 	DynamicSpriteType.push_back(OBJECT32);
@@ -675,8 +864,92 @@ void GSPlay::RandomSprite()
 	}
 	if (check == 0)
 	{
+		//set speed bang speed hien tai
+		object->SetSpeed(m_ArrObject.back()->GetSpeed());
+		if(object->GetEffects() != nullptr)
+			object->GetEffects()->SetSpeed(m_ArrObject.back()->GetSpeed());
 		m_ArrObject.push_back(object);
 	}
 	DynamicSpriteType.clear();
+}
+
+void GSPlay::RandomItem()
+{
+	std::vector<DynamicSpriteType> itemType;
+	itemType.push_back(ENERGY);
+	itemType.push_back(HEART);
+
+
+	int IndexType = rand() % itemType.size();
+
+	auto shader = ResourceManagers::GetInstance()->GetShader("ObjectShader");
+	auto model = ResourceManagers::GetInstance()->GetModel("Sprite2D");
+	auto texture = ResourceManagers::GetInstance()->GetTexture("interact64");
+	std::shared_ptr<DynamicSprite> effect;
+	std::shared_ptr<DynamicSprite> item;
+
+	//set vi tri
+	GLint XPos = (rand() % (2 * screenWidth)) - screenWidth / 2;
+	GLint YPos = rand() % (screenHeight / 2) + screenHeight;
+
+	switch (itemType.at(IndexType))
+	{
+	case ENERGY:
+		texture = ResourceManagers::GetInstance()->GetTexture("interact64");
+		item = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		item->SetName("energy");
+		item->SetSize(64, 64);
+		item->Set2DPosition(XPos, YPos);
+		item->SetNumFrame(4);
+		item->SetNumSprite(8);
+		item->SetFrame(Vector2(2, 0));
+
+		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
+		effect = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		effect->SetSize(96, 96);
+		effect->Set2DPosition(item->Get2DPosition());
+		effect->SetNumFrame(3);
+		effect->SetFrame(Vector2(0, 2));
+		item->SetEffects(effect);
+		break;
+	case HEART:
+		texture = ResourceManagers::GetInstance()->GetTexture("interact64");
+		item = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		item->SetName("heart");
+		item->SetSize(64, 64);
+		item->Set2DPosition(XPos, YPos);
+		item->SetNumFrame(4);
+		item->SetNumSprite(8);
+		item->SetFrame(Vector2(3, 0));
+
+		texture = ResourceManagers::GetInstance()->GetTexture("ripple96");
+		effect = std::make_shared<DynamicSprite>(model, shader, texture, m_SpeedMove);
+		effect->SetSize(96, 96);
+		effect->Set2DPosition(item->Get2DPosition());
+		effect->SetNumFrame(3);
+		effect->SetFrame(Vector2(0, 2));
+		item->SetEffects(effect);
+		break;
+	default:
+		break;
+	}
+
+	int check = 0;
+	for (auto& obj : m_ArrObject) {
+		if (item->CheckCollision(obj))
+		{
+			check = 1;
+			break;
+		}
+	}
+	if (check == 0)
+	{
+		//set speed bang speed hien tai
+		item->SetSpeed(m_ArrObject.back()->GetSpeed());
+		if (item->GetEffects() != nullptr)
+			item->GetEffects()->SetSpeed(m_ArrObject.back()->GetSpeed());
+		m_ArrObject.push_back(item);
+	}
+	itemType.clear();
 }
 

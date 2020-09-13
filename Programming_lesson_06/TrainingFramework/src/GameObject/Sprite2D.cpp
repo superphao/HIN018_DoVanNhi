@@ -26,6 +26,7 @@ Sprite2D::Sprite2D(std::shared_ptr<Models> model, std::shared_ptr<Shaders> shade
 	m_CurrentFrame = Vector2(0, 0);
 	m_NumFrame = 1;
 	m_NumSprite = 1;
+	m_alpha = 0;
 	time = 0;
 	temp = 1;
 
@@ -46,8 +47,10 @@ Sprite2D::Sprite2D(std::shared_ptr<Models> model, std::shared_ptr<Shaders> shade
 	m_CurrentFrame = Vector2(0, 0);
 	m_NumFrame = 1;
 	m_NumSprite = 1;
+	m_alpha = 0;
 	time = 0;
 	temp = 1;
+
 
 	m_Vec3Position = Vector3(0, 0, 0);
 	m_iHeight = 50;
@@ -130,6 +133,11 @@ void Sprite2D::Draw()
 		glUniform1f(iTempShaderVaribleGLID, 1.0);
 
 	iTempShaderVaribleGLID = -1;
+	iTempShaderVaribleGLID = m_pShader->GetUniformLocation((char*)"u_fix_alpha");
+	if (iTempShaderVaribleGLID != -1)
+		glUniform1f(iTempShaderVaribleGLID, m_alpha);
+
+	iTempShaderVaribleGLID = -1;
 	iTempShaderVaribleGLID = m_pShader->GetUniformLocation((char*)"u_matMVP");
 	if (iTempShaderVaribleGLID != -1)
 		glUniformMatrix4fv(iTempShaderVaribleGLID, 1, GL_FALSE, matrixWVP.m[0]);
@@ -198,6 +206,11 @@ void Sprite2D::SetSize(GLint width, GLint height)
 	CaculateWorldMatrix();
 }
 
+Vector2 Sprite2D::GetSize()
+{
+	return Vector2(m_iWidth, m_iHeight);
+}
+
 void Sprite2D::SetFrame(Vector2 nextFrame)
 {
 	m_CurrentFrame = nextFrame;
@@ -245,6 +258,11 @@ void Sprite2D::Animation(GLfloat deltatime)
 		}
 		time = time + 3 * deltatime;
 	}
+}
+
+void Sprite2D::SetColorAlpha(GLfloat alpha)
+{
+	m_alpha = alpha;
 }
 
 

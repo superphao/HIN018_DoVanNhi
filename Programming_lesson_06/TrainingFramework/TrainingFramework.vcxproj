@@ -145,7 +145,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Include\AMD;$(SolutionDir)\freetype\include;$(SolutionDir)\Utilities\src;$(projectdir)\src\GameManager;$(projectdir)\src\GameObject;$(projectdir)\src\GameState;$(projectdir)\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Include\AMD;$(SolutionDir)\freetype\include;$(SolutionDir)\Utilities\src;$(projectdir)\src\GameManager;$(projectdir)\src\GameObject;$(projectdir)\src\GameState;$(projectdir)\src;$(SolutionDir)\soloud20200207\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -278,7 +278,6 @@
     <ClCompile Include="src\GameObject\Texture.cpp" />
     <ClCompile Include="src\GameStates\GameStatebase.cpp" />
     <ClCompile Include="src\GameStates\GameStateMachine.cpp" />
-    <ClCompile Include="src\GameStates\GSCredit.cpp" />
     <ClCompile Include="src\GameStates\GSIntro.cpp" />
     <ClCompile Include="src\GameStates\GSMenu.cpp" />
     <ClCompile Include="src\GameStates\GSOption.cpp" />
@@ -304,7 +303,6 @@
     <ClInclude Include="src\GameObject\Texture.h" />
     <ClInclude Include="src\GameStates\GameStatebase.h" />
     <ClInclude Include="src\GameStates\GameStateMachine.h" />
-    <ClInclude Include="src\GameStates\GSCredit.h" />
     <ClInclude Include="src\GameStates\GSIntro.h" />
     <ClInclude Include="src\GameStates\GSMenu.h" />
     <ClInclude Include="src\GameStates\GSOption.h" />

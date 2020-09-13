@@ -4,6 +4,7 @@
 #include "GameConfig.h"
 
 
+
 extern int screenWidth; //need get on Graphic engine
 extern int screenHeight; //need get on Graphic engine
 
@@ -159,49 +160,30 @@ void GSMenu::Init()
 	m_Text_gameDecription->Set2DPosition(Vector2(screenWidth / 2 - 280, 150));
 
 	//open file highscore
-	std::ifstream readFile("..\\Data\\Highscore\\Highscore.txt", std::ios::binary);
-	if (!readFile.is_open())
+	int buffer[1];
+	std::fstream file("..\\Data\\Highscore\\Highscore.bin", std::ios::in | std::ios::binary);
+	if (file.is_open())
 	{
-		LOGE("ERROR Highscore.txt \n");
-		return;
+		LOGI("Load File:Highscore.bin\t\t");
+		file.read(reinterpret_cast<char*>(buffer), sizeof(GLint));
 	}
-	else
-	{
-		LOGI("Load File:Highscore.txt\t\t");
+	else LOGE("ERROR Highscore.bin \n");
+	file.close();
+	buffer[0] < 0 ? m_highscore = 0 : m_highscore = buffer[0];
 
-		while (!readFile.eof())
-		{
-			readFile >> m_highscore;
-		}
-		readFile.close();
-	}
-
-	//text hight score
+	//text high score
 	font = ResourceManagers::GetInstance()->GetFont("arialbd");
 	m_Text_score = std::make_shared< Text>(shader, font, std::to_string(m_highscore) + "m", TEXT_COLOR::BLACK, 0.7);
 	m_Text_score->Set2DPosition(Vector2((GLfloat)screenWidth / 2, 30));
 
 	//theme music
-	//m_soloud.init();
-
-	FILE* p = fopen("theme_music_cut.mp3", "r");
-	if (!p)
-	{
-		return;
-	}
-	SoLoud::DiskFile* f = new SoLoud::DiskFile(p);
-	m_ThemeMusic.loadFile(f);
+	m_ThemeMusic.load("..\\Data\\Music\\theme_music_cut.wav");
 	m_ThemeMusic.setLooping(true);
-	m_soloud.play(m_ThemeMusic);
+	Application::GetInstance()->m_soloudMusic.play(m_ThemeMusic);
 
-	p = fopen("Water_dripping.mp3", "r");
-	if (!p)
-	{
-		return;
-	}
-	f = new SoLoud::DiskFile(p);
-	m_ButtonMusic.loadFile(f);	
-
+	//button music
+	m_ButtonMusic.load("..\\Data\\Music\\Water_dripping.wav");
+	
 }
 
 void GSMenu::Exit()
@@ -241,17 +223,17 @@ void GSMenu::HandleKeyEvents(int key, bool bIsPressed)
 					break;
 				}
 			}
-			m_soloud.play(m_ButtonMusic);
+			Application::GetInstance()->m_soloudEffects.play(m_ButtonMusic);
 			m_ThemeMusic.stop();
 			isUpdateState = true;
 			GameStateMachine::GetInstance()->ChangeState(StateTypes::STATE_Play);
 			break;
 		case 'D':
-			m_soloud.play(m_ButtonMusic);
+			Application::GetInstance()->m_soloudEffects.play(m_ButtonMusic);
 			ChangePlayerRight();
 			break;
 		case 'A':
-			m_soloud.play(m_ButtonMusic);
+			Application::GetInstance()->m_soloudEffects.play(m_ButtonMusic);
 			ChangePlayerLeft();
 			break;
 		default:
@@ -270,7 +252,7 @@ void GSMenu::HandleTouchEvents(int x, int y, bool bIsPressed)
 			(it)->HandleTouchEvents(x, y, bIsPressed);
 			if ((it)->IsHandle())
 			{
-				m_soloud.play(m_ButtonMusic);
+				Application::GetInstance()->m_soloudEffects.play(m_ButtonMusic);
 				break;
 			}
 		}
@@ -300,25 +282,19 @@ void GSMenu::Update(float deltaTime)
 	//update music + highscore
 	if (isUpdateState)
 	{
-		std::ifstream readFile("..\\Data\\Highscore\\Highscore.txt", std::ios::binary);
-		if (!readFile.is_open())
+		int buffer[1];
+		std::fstream file("..\\Data\\Highscore\\Highscore.bin", std::ios::in | std::ios::binary);
+		if (file.is_open())
 		{
-			LOGE("ERROR Highscore.txt \n");
-			return;
+			LOGI("Load File:Highscore.bin\t\t");
+			file.read(reinterpret_cast<char*>(buffer), sizeof(GLint));
 		}
-		else
-		{
-			LOGI("Load File:Highscore.txt\t\t");
-
-			while (!readFile.eof())
-			{
-				readFile >> m_highscore;
-			}
-			readFile.close();
-		}
+		else LOGE("ERROR Highscore.bin \n");
+		file.close();
+		buffer[0] < 0 ? m_highscore = 0 : m_highscore = buffer[0];
 		isUpdateState = false;
 		m_Text_score->setText(std::to_string(m_highscore) + "m");
-		m_soloud.play(m_ThemeMusic);
+		Application::GetInstance()->m_soloudMusic.play(m_ThemeMusic);
 	}
 }
 

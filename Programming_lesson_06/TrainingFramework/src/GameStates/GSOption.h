@@ -1,6 +1,7 @@
 #pragma once
 #include "GameStatebase.h"
 #include "GameButton.h"
+#include "Application.h"
 
 enum OptionState
 {
@@ -8,6 +9,16 @@ enum OptionState
 	OPTION_ABOUT,
 	OPTION_HELP,
 	OPTION_MAIN,
+};
+
+enum NameText
+{
+	TEXT_NAME_GAME,
+	TEXT_TITLE_DIALOG,
+	TEXT_MUSIC,
+	TEXT_NUM_VOLUME_MUSIC,
+	TEXT_SOUND_EFFECTS,
+	TEXT_NUM_VOLUME_EFFECT,
 };
 
 class GSOption :
@@ -33,18 +44,23 @@ public:
 	void CloseDialog();
 	void About();
 	void Help();
-	void AddVolume();
-	void SubVolume();
+	void AddVolumeMusic();
+	void SubVolumeMusic();
+	void AddVolumeEffect();
+	void SubVolumeEffect();
+	void SetVolume();
 
 private:
 	std::vector< std::shared_ptr<Sprite2D>> m_ArrWater;
 	std::list<std::shared_ptr<GameButton>>	m_listButton;
-	std::shared_ptr<Text>  m_Text_gameName;
 	OptionState m_OptionState;
 	std::shared_ptr<Sprite2D> m_Dialog;
+	std::shared_ptr<Sprite2D> m_DialogHelp;
+	std::shared_ptr<Sprite2D> m_DialogAbout;
 	std::shared_ptr<GameButton>	m_buttonClose;
-	std::shared_ptr<Text>  m_Text_NumVolume;
-	GLint m_numVolume;
+	GLint m_numVolumeMusic;
+	GLint m_numVolumeEffect;
 	std::vector<std::shared_ptr<GameButton>> m_lButtonVolume;
+	std::vector<std::shared_ptr<Text>> m_ListText;
 };
 

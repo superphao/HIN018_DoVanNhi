@@ -14,7 +14,7 @@ DynamicSprite::DynamicSprite(std::shared_ptr<Models> model, std::shared_ptr<Shad
 	: Sprite2D(model, shader, texture)
 {
 	m_Effects = nullptr;
-	m_Speed = speed;
+	m_Speed = 1;
 	m_MaxSpeed = speed;
 }
 
@@ -33,6 +33,16 @@ void DynamicSprite::Update(GLfloat deltaTime, StateMoveSprite stt_move, StateSpr
 	case NORMAL:
 		m_Speed = m_MaxSpeed;
 		break;
+	case SPEEDUP:
+		if (m_Speed < m_MaxSpeed)
+		{
+			m_Speed += deltaTime;
+		}
+		else
+		{
+			m_Speed = m_MaxSpeed;
+		}
+		break;
 	case STOP:
 		m_Speed = 0;
 		break;
@@ -46,16 +56,16 @@ void DynamicSprite::Update(GLfloat deltaTime, StateMoveSprite stt_move, StateSpr
 		Set2DPosition(m_Vec2DPos.x, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
 		break;
 	case MOVE_LEFT:
-		Set2DPosition(m_Vec2DPos.x + 2 * 60 * deltaTime, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
+		Set2DPosition(m_Vec2DPos.x + 2 * (m_Speed / 7) * 60 * deltaTime, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
 		break;
 	case MOVE_RIGHT:
-		Set2DPosition(m_Vec2DPos.x - 2 * 60 * deltaTime, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
+		Set2DPosition(m_Vec2DPos.x - 2 * (m_Speed / 7) * 60 * deltaTime, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
 		break;
 	case MOVE_RIGHT_PLUS:
-		Set2DPosition(m_Vec2DPos.x - 4 * 60 * deltaTime, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
+		Set2DPosition(m_Vec2DPos.x - 4 * (m_Speed / 7) * 60 * deltaTime, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
 		break;
 	case MOVE_LEFT_PLUS:
-		Set2DPosition(m_Vec2DPos.x + 4 * 60 * deltaTime, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
+		Set2DPosition(m_Vec2DPos.x + 4 * (m_Speed / 7) * 60 * deltaTime, m_Vec2DPos.y - m_Speed * 60 * deltaTime);
 		break;
 	case FREEZE:
 		m_Speed = 0;
@@ -93,4 +103,9 @@ void DynamicSprite::SetSpeed(GLfloat speed)
 GLfloat DynamicSprite::GetSpeed()
 {
 	return m_Speed;
+}
+
+void DynamicSprite::SetMaxSpeed(GLfloat maxSpeed)
+{
+	m_MaxSpeed = maxSpeed;
 }

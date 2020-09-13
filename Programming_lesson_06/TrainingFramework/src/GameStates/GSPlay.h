@@ -1,6 +1,8 @@
 #pragma once
 #include "gamestatebase.h"
 #include "GameButton.h"
+#include "soloud_wav.h"
+#include "Application.h"
 
 class Sprite2D;
 class Sprite3D;
@@ -39,6 +41,7 @@ public:
 
 	void DoCollision();
 	void RandomSprite();
+	void RandomItem();
 
 	void SetNewPostionForBullet();
 
@@ -58,11 +61,20 @@ private:
 	std::shared_ptr<Text> m_TextSttGame;
 	std::shared_ptr<Text> m_DesciptSttGame;
 	GLfloat m_TimeBornObj;
+	GLfloat m_TimeBornItem;
 	GLfloat m_score;
 	GLfloat m_SpeedMove;
 	std::vector<std::shared_ptr<GameButton>> m_listButton;
 	std::shared_ptr<Sprite2D> m_BackgroundOption;
 	std::shared_ptr<GameButton> m_buttonOption;
 	GLint m_highscore;
+	SoLoud::Wav m_ThemeMusic;
+	SoLoud::Wav m_SlowdownMusic;
+	SoLoud::Wav m_CollisionsMusic;
+	SoLoud::Wav m_GameOverMusic;
+	SoLoud::Wav m_colWhirlPoolMusic;
+	SoLoud::Wav m_ButtonMusic;
+	SoLoud::Wav m_plJumpMusic;
+	SoLoud::Wav m_itemMusic;
 };
 
